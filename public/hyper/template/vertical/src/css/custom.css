@@ -1,0 +1,114 @@
+.box {
+  margin-bottom: 20px;
+}
+
+.summary-box{
+  .nav-pills .nav-link {
+    color: #7e8299;
+  }
+  .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #ec4887;
+    background-color: transparent;
+    border-bottom: 2px solid #ec4887;
+  } 
+}
+
+.revinue-status{
+  background-image: linear-gradient(to right bottom, #eb4885, #e04a8f, #d44d97, #c7509e, #b954a4);
+  color: #ffffff;
+}
+
+.earning-status{
+  background-image: linear-gradient(to right bottom, #ffb72c, #ffa738, #ff9944, #fc8b4f, #f57f59);
+  color: #ffffff;
+}
+
+.page-status{
+  background-image: linear-gradient(to right bottom, #875fc0, #7c58be, #6f52bd, #624cbb, #5246ba);
+  color: #ffffff;
+}
+.bounce-status{
+  background-image: linear-gradient(to right bottom, #46c5f2, #40b3e8, #40a1dd, #458ed0, #4c7cc1);
+  color: #ffffff;
+}
+
+.timeline-label .timeline-badge{
+  margin-top: 3px;
+}
+.timeline-label .timeline-label {
+  width: 96px;
+}
+.timeline-label::before {
+  left: 95px;
+  background-color: #f7f7f7;
+}
+
+#basic-doughnut{
+  height:314px;
+}
+
+.rtl .timeline-label::before {
+  right: 94px;
+  left: auto;
+}
+
+
+
+/*<Dashboard 2 Start>*/
+
+
+@media only screen and (max-width: 1366px) {
+  .pageview{
+    height: 190px;
+  }
+}
+
+.aenean
+{
+    height:260px;
+}
+.traffic
+{
+  height:408px;
+}
+.income
+{
+  height:190px;
+}
+.sold
+{
+  height:190px;
+}
+/*.johen
+{
+height: 300px;
+}*/
+
+.
+/*<Dashboard 3 Start>*/
+
+@media only screen and (max-width: 1600px) {
+  .webaudience{
+    height: 455px;
+  }
+}
+
+/*<Dashboard 3 End>*/
+
+
+/*<Dashboard 7 Start>*/
+
+.dailyincome{
+  height: 500px !important;
+}
+.revenue{
+  height: 500px !important;
+}
+
+@media only screen and (max-width: 1199px) {
+  .revenue{
+    height: auto !important;
+  }
+}
+
+/*<Dashboard 7 End>*/
