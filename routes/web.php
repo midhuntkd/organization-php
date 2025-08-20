@@ -29,7 +29,9 @@ Route::get('/email/verify/{id}/{hash}', CustomVerifyEmailController::class)
     ->middleware(['signed', 'throttle:6,1'])   // no 'auth' here
     ->name('custom.verification.verify');
 
-
+Route::post('/auth/precheck/{organization:slug?}', [CustomLoginController::class, 'check'])
+    ->middleware('throttle:10,1') // prevent abuse
+    ->name('auth.precheck');
 
 
 
