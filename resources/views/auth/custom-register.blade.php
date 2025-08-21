@@ -1,7 +1,7 @@
 @extends('layouts.custom_auth')
 
 @section('content')
-<div class="bg-white rounded10 shadow-lg">
+<div class="bg-white rounded10 shadow-lg my-auto  px-10 pb-20">
     <div class="content-top-agile p-20 pb-0">
         <h2 class="text-primary fw-600">Get started with Us</h2>
         <p class="mb-0 text-fade">Register a new membership</p>
@@ -27,44 +27,52 @@
                     <input type="text" name="phone" required class="form-control ps-15 bg-transparent" placeholder="Phone">
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="input-group mb-3">
-                    <div class="reg-radio-button">
-                        <input name="verification_type" value="aadhaar" required type="radio" id="aadhaar" class="radio-col-primary" checked="">
-                        <label for="aadhaar">Aadhar</label>
-                        <input name="verification_type" value="emirates_id" type="radio" id="emirates_id" class="radio-col-success">
-                        <label for="emirates_id">Emirates ID</label>
+                    <span class="input-group-text bg-transparent"><i class="text-fade ti-world"></i></span>
+                    <select name="country_of_residence" id="country_of_residence" class="form-control" required>
+                        <option value="">-- Country of Residence --</option>
+                        <option value="India" {{ old('country_of_residence') == 'India' ? 'selected' : '' }}>India</option>
+                        <option value="UAE" {{ old('country_of_residence') == 'UAE' ? 'selected' : '' }}>UAE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="reg-radio-button">
+                            <input name="verification_type" value="aadhaar" required type="radio" id="aadhaar" class="radio-col-primary" checked="">
+                            <label for="aadhaar">Aadhar</label>
+                            <input name="verification_type" value="emirates_id" type="radio" id="emirates_id" class="radio-col-success">
+                            <label for="emirates_id">Emirates ID</label>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <div class="input-group mb-3">
-                    <span class="input-group-text bg-transparent"><i class="text-fade ti-lock"></i></span>
-                    <input type="text" id="verification_id_number" name="verification_id_number" required class="form-control ps-15 bg-transparent" placeholder="Verification ID Number">
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-transparent"><i class="text-fade ti-credit-card"></i></span>
+                        <input type="text" id="verification_id_number" name="verification_id_number" required class="form-control ps-15 bg-transparent" placeholder="Verification ID Number">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <div class="input-group mb-3">
-                    <span class="input-group-text bg-transparent"><i class="text-fade ti-image"></i></span>
-                    <input type="file" name="verification_image" required class="form-control ps-15 bg-transparent" placeholder="Upload Verification Image">
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-transparent"><i class="text-fade ti-image"></i></span>
+                        <input type="file" name="verification_image" required class="form-control ps-15 bg-transparent" placeholder="Upload Verification Image">
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <!-- <div class="col-12">
+                <div class="row">
+                    <!-- <div class="col-12">
                     <div class="checkbox">
                         <input type="checkbox" id="basic_checkbox_1">
                         <label for="basic_checkbox_1">I agree to the <a href="#" class="text-primary">Terms</a></label>
                     </div>
                 </div> -->
-                <!-- /.col -->
-                <div class="col-12 text-center">
-                    <button type="submit" class="btn btn-primary w-p100 mt-10">REGISTER</button>
+                    <!-- /.col -->
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-primary w-p100 mt-10">REGISTER</button>
+                    </div>
+                    <!-- /.col -->
                 </div>
-                <!-- /.col -->
-            </div>
         </form>
         <div class="text-center">
             <p class="mt-15 mb-0 text-fade">Already have an account?<a href="{{ route('member_login', $organization->slug) }}" class="text-primary ms-5">Sign In</a></p>

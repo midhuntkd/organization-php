@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('verification_id_number')->nullable()->after('verification_type');
             $table->string('verification_image')->nullable()->after('verification_type');
             $table->boolean('approved')->default(false)->after('verification_image');
-            $table->boolean('password_changed')->default(false)->after('approved');
+            $table->boolean('rejected')->default(false)->after('approved');
+            $table->boolean('password_changed')->default(false)->after('rejected');
 
             $table->foreign('organization_id')->references('id')->on('organizations')->onDelete('cascade');
             $table->unique(['organization_id', 'email']);

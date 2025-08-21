@@ -24,6 +24,7 @@ class CustomRegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
+            'country_of_residence' => 'required|in:India,UAE',
             'verification_image' => 'required|image|max:2048',
             'verification_type'      => 'required|in:aadhaar,emirates_id',
             'verification_id_number' => [

@@ -18,10 +18,12 @@
                     <div class="d-flex flex-row">
                         <div class=""><img src="{{ asset('hyper/images/avatar/avatar-13.png') }}" alt="user" class="rounded bg-danger-light w-150" width="100"></div>
                         <div class="ps-20">
-                            <h5 class="mb-0">Nil Yeager</h5>
-                            <p class="my-5 text-fade">Manager</p>
-                            <a href="mailto:dummy@gmail.com"><span class="icon-Mail-notification me-5 text-success"><span class="path1"></span><span class="path2"></span></span> dummy@gmail.com</a>
-                            <button class="btn btn-danger btn-sm mt-5"> Logout</button>
+                            <h5 class="mb-0">{{ Auth::user()->name }}</h5>
+                            <p class="my-5 text-fade">{{ Auth::user()->getRoleNames()->implode(', ') }}</p>
+                            <a href="mailto:dummy@gmail.com"><span class="icon-Mail-notification me-5 text-success"><span class="path1"></span><span class="path2"></span></span> {{ Auth::user()->email }}</a>
+                            <a href="{{ route('custom_logout', $organization->slug) }}" class="btn btn-danger btn-sm mt-5">
+                                <span>Logout</span>
+                            </a>
                         </div>
                     </div>
                 </div>

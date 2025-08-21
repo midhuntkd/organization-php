@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="https://hyper-admin-templates.multipurposethemes.com/bs5/images/favicon.ico">
+    <link rel="icon" href="{{ asset('hyper/images/favicon.ico') }}">
 
     <title>{{ config('app.name', 'Organizaion Admin panel') }} </title>
 
@@ -56,7 +56,8 @@
     </script>
     <script src="{{ asset('hyper/template/vertical/src/js/pages/chat-popup.js') }}"></script>
     <script src="{{ asset('hyper/assets/icons/feather-icons/feather.min.js') }}"></script>
-    <script src="{{ asset('hyper/assets/vendor_components/datatable/datatables.min.js') }}"></script>
+    <script src="{{ asset('hyper/assets/vendor_components/Magnific-Popup-master/dist/jquery.magnific-popup.min.js') }}"></script>
+    <script src="{{ asset('hyper/assets/vendor_components/Magnific-Popup-master/dist/jquery.magnific-popup-init.js') }}"></script>
 
     <script src="{{ asset('hyper/template/vertical/src/js/demo.js') }}"></script>
     <script src="{{ asset('hyper/template/vertical/src/js/template.js') }}"></script>

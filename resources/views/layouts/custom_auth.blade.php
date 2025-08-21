@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="https://hyper-admin-templates.multipurposethemes.com/bs5/images/favicon.ico">
+    <link rel="icon" href="{{ asset('hyper/images/favicon.ico') }}">
 
     <title>{{ config('app.name', 'Organizaion Admin panel') }} </title>
 
@@ -20,14 +20,26 @@
     @stack('styles')
 </head>
 
-<body class="hold-transition theme-primary bg-img" style="background-image: url('{{ asset('hyper/images/auth-bg/bg-16.jpg') }}');">>
+<body class="hold-transition theme-primary bg-img">
 
-    <div class="container h-p100">
-        <div class="row align-items-center justify-content-md-center h-p100">
+
+    <div class="h-p100">
+        <div class="row justify-content-md-center h-p100">
 
             <div class="col-12">
-                <div class="row justify-content-center g-0">
-                    <div class="col-lg-5 col-md-5 col-12">
+                <div class="row g-0 h-p100 justify-content-center align-items-lg-center">
+                    <div class="col-lg-6 h-p100 bg-white align-items-lg-center d-lg-flex justify-content-md-center d-none"
+                        style="background-image: url('{{ asset('hyper/images/auth-bg/bg-16.jpg') }}')">
+                        <a href="#" target="_blank" style="text-decoration: none;">
+                            <img src="{{ asset('hyper/images/logo-light-text3.png') }}" alt="Hyper Admin">
+                        </a>
+                    </div>
+                    <div class="col-lg-6 align-items-center d-flex h-p100 flex-column">
+                        <div class="py-20 text-center justify-content-center d-lg-none">
+                            <a href="#" target="_blank" style="text-decoration: none;">
+                                <img src="{{ asset('hyper/images/logo-light-text3.png') }}" alt="Hyper Admin">
+                            </a>
+                        </div>
                         @yield('content')
                     </div>
                 </div>

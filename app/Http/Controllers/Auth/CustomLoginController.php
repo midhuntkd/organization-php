@@ -71,9 +71,12 @@ class CustomLoginController extends Controller
             $user = User::where('email', $request->email)
                 ->where('organization_id', $organizationId)
                 ->first();
-        } else {
-            // organization admin login 
-            //$user = User::where('email', $request->email)->first();
+        } 
+        
+        if(!$user) {
+            throw ValidationException::withMessages([
+                'email' => ['invalid email id specified.'],
+            ]);
         }
 
         // Validate user
@@ -105,7 +108,7 @@ class CustomLoginController extends Controller
 
         // If organization admin
         if ($user->hasRole('organization-admin')) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('orgadmin.members', $organization->slug);
         }
 
         // If member, check if the organization matches
@@ -113,11 +116,11 @@ class CustomLoginController extends Controller
 
             // (Optional) force password change on first login
             if (! $user->password_changed) {
-                return redirect()->route('password.change')
+                return redirect()->route('member.password.change', $organization->slug)
                     ->with('status', __('Please set a new password to continue.'));
             }
 
-            return redirect()->route('member.dashboard');
+            return redirect()->route('member.dashboard', $organization->slug);
         }
 
         // Default to login failure
@@ -126,10 +129,11 @@ class CustomLoginController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(Organization $organization)
     {
         Auth::logout();
-        return redirect()->route('login');
+        return redirect()->route('member_login', ['organization' => $organization->slug])
+            ->with('status', __('You have been logged out successfully.')); 
     }
 
 

@@ -30,7 +30,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'verification_id_number',
         'password',
         'approved',
-        'password_changed'
+        'password_changed',
+        'membership_id',
+        'membership_code',
+        'rejected',
+        'country_of_residence',
     ];
 
     /**
@@ -68,5 +72,47 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->verification_image
             ? asset('storage/' . $this->verification_image)
             : null;
+    }
+
+    public function rejections()
+    {
+        return $this->hasMany(MemberRejection::class);
+    }
+
+    public function membership()
+    {
+        return $this->belongsTo(Membership::class);
+    }
+
+    /**
+     * Generate the next membership code for the given org & category.
+     * Format: {ORG_PREFIX}{NNNNN}{CATEGORY_PREFIX}, where NNNNN starts at 10001.
+     */
+    public static function nextMembershipCode(Organization $org, MembershipCategory $category): string
+    {
+        $orgPrefix = trim((string) $org->org_prefix) ?: 'ORG';
+        $catPrefix = trim((string) $category->prefix) ?: 'CAT';
+
+        // Find the last code that matches ORG%CAT for this organization
+        $lastCode = static::query()
+            ->where('organization_id', $org->id)
+            ->whereNotNull('membership_code')
+            ->where('membership_code', 'like', $orgPrefix . '%' . $catPrefix)
+            ->orderByDesc('id')
+            ->value('membership_code');
+
+        $base = 10001;
+        $next = $base;
+
+        if ($lastCode) {
+            // Extract the middle number between org and category prefixes
+            $pattern = '/^' . preg_quote($orgPrefix, '/') . '(\d+)' . preg_quote($catPrefix, '/') . '$/';
+
+            if (preg_match($pattern, $lastCode, $m)) {
+                $next = max($base, ((int) $m[1]) + 1);
+            }
+        }
+
+        return $orgPrefix . $next . $catPrefix;
     }
 }

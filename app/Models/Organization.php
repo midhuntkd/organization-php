@@ -74,4 +74,10 @@ class Organization extends Model
     {
         return 'slug';
     }
+
+    /** Throw if not found */
+    public static function fromSlugOrFail(string $slug): self
+    {
+        return static::where('slug', $slug)->firstOrFail();
+    }
 }

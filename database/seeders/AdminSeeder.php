@@ -70,5 +70,18 @@ class AdminSeeder extends Seeder
 
         // Assign role to user
         $admin->assignRole($superAdminRole);
+
+        $organizationAdmin = User::firstOrCreate([
+            'email' => 'admin@sampleOrganization.com',
+        ], [
+            'name' => 'ORG Admin',
+            'organization_id' => $sampleOrganization->id,
+            'password' => Hash::make('admin@147258'), // change after first login
+            'email_verified_at' => now(),
+            'approved' => true,
+            'password_changed' => true,
+        ]);
+
+        $organizationAdmin->assignRole($organizationAdminRole);
     }
 }
