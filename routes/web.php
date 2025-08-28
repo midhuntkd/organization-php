@@ -22,6 +22,14 @@ Route::get('/', function () {
 Route::get('/member/register/{organization}', [CustomRegisterController::class, 'showRegisterForm'])->name('custom_register');
 Route::post('/member/register/{organization}', [CustomRegisterController::class, 'register'])->name('custom_register.submit');
 
+// AJAX: send OTP to email
+Route::post('/member/register/send-otp/{organization}', [CustomRegisterController::class, 'sendOtp'])
+    ->name('custom_register.send_otp');
+
+// NEW: verify OTP (AJAX)
+Route::post('/member/register/verify-otp/{organization}', [CustomRegisterController::class, 'verifyOtp'])
+    ->name('custom_register.verify_otp');    
+
 Route::get('/admin/login/', [CustomLoginController::class, 'showLoginForm'])->name('admin_login');
 Route::post('/admin/login', [CustomLoginController::class, 'login'])->name('admin_login.submit');
 
@@ -51,6 +59,10 @@ Route::middleware(['auth', 'role:organization-admin'])
                 //Route::resource('/members', OrgUserController::class);
                 Route::get('/member/list', [MemberController::class, 'showMemberList'])->name('members');
                 Route::get('/member/approve/{user}', [MemberController::class, 'approve'])->name('member.approve');
+                
+                Route::post('/member/approve/{user}', [MemberController::class, 'approve'])
+                    ->name('member.approve.post'); // for AJAX
+
                 Route::post('/members/{user}/reject',  [MemberController::class, 'reject'])
                     ->name('member.reject');
 
