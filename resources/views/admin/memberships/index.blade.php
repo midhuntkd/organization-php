@@ -43,7 +43,7 @@
                                 <tr class="text-dark">
                                     <th>ID</th>
                                     <th>Name</th>
-                                    <th>Category</th>
+                                    <th>Prefix</th>
                                     <th>Joining Fee</th>
                                     <th>Monthly Fee</th>
                                     <th>Status</th>
@@ -57,7 +57,7 @@
                                 <tr>
                                     <td class="text-dark">{{ $m->id }}</td>
                                     <td class="fw-600">{{ $m->name }}</td>
-                                    <td>{{ $m->category?->prefix }} — {{ $m->category?->name }}</td>
+                                    <td>{{ $m->prefix }} </td>
                                     <td>{{ number_format($m->joining_fee, 2) }}</td>
                                     <td>{{ number_format($m->monthly_fee, 2) }}</td>
                                     <td>

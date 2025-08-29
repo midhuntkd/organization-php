@@ -16,8 +16,21 @@
                             </span> -->
                         </a>
                     </li>
-                    <!-- <li class="header fs-10 m-0 text-uppercase">Components</li> -->
                     <li class="treeview">
+                        <a href="#">
+                            <i data-feather="box"></i>
+                            <span>Members</span>
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-right pull-right"></i>
+                            </span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li><a href="{{ route('orgadmin.members.myapprovals', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>My Approvals</a></li>
+                            <li><a href="{{ route('orgadmin.members', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Members</a></li>
+                        </ul>
+                    </li>
+                    <!-- <li class="header fs-10 m-0 text-uppercase">Components</li> -->
+                    <!-- <li class="treeview">
                         <a href="#">
                             <i data-feather="box"></i>
                             <span>Membership Categories</span>
@@ -29,7 +42,7 @@
                             <li><a href="{{ route('orgadmin.membership-categories.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
                             <li><a href="{{ route('orgadmin.membership-categories.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
                         </ul>
-                    </li>
+                    </li> -->
                     <li class="treeview">
                         <a href="#">
                             <i data-feather="credit-card"></i>
@@ -64,7 +77,7 @@
                             @role('organization-admin')
                             <h4 class="title-bx text-black m-0">Admin</h4>
                             @endrole
-                            @role('member') 
+                            @role('member')
                             <h4 class="title-bx text-black m-0">Member</h4>
                             @endrole
                         </div>

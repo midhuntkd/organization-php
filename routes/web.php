@@ -50,6 +50,7 @@ Route::post('/auth/precheck/{organization:slug?}', [CustomLoginController::class
 Route::middleware(['auth', 'role:organization-admin'])
     ->prefix('{organization:slug}/admin')    
     ->name('orgadmin.')
+    ->scopeBindings()
     ->group(function () {
         Route::middleware(['org.context'])    // custom, see below
             ->group(function () {
@@ -58,6 +59,7 @@ Route::middleware(['auth', 'role:organization-admin'])
                     ->name('dashboard');
                 //Route::resource('/members', OrgUserController::class);
                 Route::get('/member/list', [MemberController::class, 'showMemberList'])->name('members');
+                Route::get('/member/list/approvals', [MemberController::class, 'showApprovalMemberList'])->name('members.myapprovals');
                 Route::get('/member/approve/{user}', [MemberController::class, 'approve'])->name('member.approve');
                 
                 Route::post('/member/approve/{user}', [MemberController::class, 'approve'])
@@ -65,6 +67,12 @@ Route::middleware(['auth', 'role:organization-admin'])
 
                 Route::post('/members/{user}/reject',  [MemberController::class, 'reject'])
                     ->name('member.reject');
+
+                Route::get('/members/{user}/view',  [MemberController::class, 'view'])
+                    ->name('member.view');
+
+                Route::post('/members/{user}/update',  [MemberController::class, 'update'])
+                    ->name('member.update');    
 
                 Route::resource('membership-categories', MembershipCategoryController::class);
                 Route::resource('memberships', MembershipController::class);

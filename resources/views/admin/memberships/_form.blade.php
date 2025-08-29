@@ -1,7 +1,7 @@
 @php
 $name = old('name', $membership->name ?? '');
 $categoryId = old('membership_category_id', $membership->membership_category_id ?? '');
-$prefix = old('prefix', $membership->prefix ?? ($organization->prefix ?? '')); 
+$prefix = old('prefix', $membership->prefix ?? ($organization->prefix ?? ''));
 $joiningFee = old('joining_fee', $membership->joining_fee ?? 0);
 $monthlyFee = old('monthly_fee', $membership->monthly_fee ?? 0);
 $status = old('status', $membership->status ?? 'active');
@@ -23,8 +23,10 @@ $is_default = old('is_default', $membership->is_default ?? false);
             value="{{ $name }}" required maxlength="255">
         @error('name') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
     </div>
+    <input type="hidden" name="membership_category_id" value="2">
 
-    <div class="col-md-6 mb-3">
+    {{-- REMOVED: Membership category --}}
+    <!-- <div class="col-md-6 mb-3">
         <label class="form-label" for="membership_category_id">Category <span class="text-danger">*</span></label>
         <select id="membership_category_id" name="membership_category_id"
             class="form-select @error('membership_category_id') is-invalid @enderror" required>
@@ -36,7 +38,7 @@ $is_default = old('is_default', $membership->is_default ?? false);
             @endforeach
         </select>
         @error('membership_category_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-    </div>
+    </div> -->
 
     {{-- NEW: Membership prefix (defaults to organization prefix) --}}
     <div class="col-md-6 mb-3">

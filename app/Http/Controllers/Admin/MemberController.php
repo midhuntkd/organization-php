@@ -21,14 +21,24 @@ class MemberController extends Controller
 {
     public function showMemberList(Organization $organization)
     {
-        $members = User::role('member')->where('organization_id', $organization->id)->with('organization')->get();
+        $members = User::role('member')->where(['organization_id' => $organization->id, 'approved' => 1])->with('organization')->get();
+        return view('admin.member_list', compact('members', 'organization'));
+    }
+
+    public function showApprovalMemberList(Organization $organization)
+    {
+        $members = User::role('member')->where(['organization_id'=> $organization->id, 'approved'=>0])->with('organization')->get();
         return view('admin.member_list', compact('members', 'organization'));
     }
     
     public function approve(Request $request, Organization $organization, User $user)
     {
 
-        abort_unless($user->organization_id === $organization->id, 403);
+        if (is_string($organization)) {
+            $organization = Organization::where('slug', $organization)->first();
+        }
+
+        //abort_unless($user->organization_id === $organization->id, 403);
         $plain = Str::password(12);
 
         // 1) Get default membership for this org
@@ -48,12 +58,12 @@ class MemberController extends Controller
         }
 
         // 2) Generate the membership code
-        $category = $membership->category; // must exist
-        if (! $category) {
-            return back()->with('error', 'The default membership has no category.');
-        }
+        //$category = $membership->category; // must exist
+        // if (! $category) {
+        //     return back()->with('error', 'The default membership has no category.');
+        // }
 
-        $membershipCode = User::nextMembershipCode($organization, $category);
+        $membershipCode = User::nextMembershipCode($organization, $membership);
 
         $user->update([
             'password'         => Hash::make($plain),
@@ -87,7 +97,12 @@ class MemberController extends Controller
 
     public function reject(Request $request, $organization, User $user)
     {
-        abort_unless($user->organization_id === $organization->id, 403);
+
+        if (is_string($organization)) {
+            $organization = Organization::where('slug', $organization)->first();
+        }
+
+        //abort_unless($user->organization_id === $organization->id, 403);
 
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
@@ -111,6 +126,59 @@ class MemberController extends Controller
         );
 
         return back()->with('status', 'Member rejected with reason saved.');
+    }
+
+    public function view($organization, User $user)
+    {
+        if (is_string($organization)) {
+            $organization = Organization::where('slug', $organization)->first();
+        }
+        //abort_unless($user->organization_id === $organization->id, 403);
+
+        return view('admin.member_view', compact('user', 'organization'));
+    }
+
+    public function update(Request $request, $organization, User $user)
+    {
+
+        if (is_string($organization)) {
+            $organization = Organization::where('slug', $organization)->first();
+        }
+
+        //abort_unless($user->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'country_of_residence' => 'required|in:India,UAE',
+            'verification_type'      => 'required|in:aadhaar,emirates_id',
+            'verification_id_number' => [
+                'required',
+                function ($attribute, $value, $fail) use ($request) {
+                    $digitsOnly = preg_replace('/\D/', '', $value);
+
+                    if ($request->verification_type === 'aadhaar' && strlen($digitsOnly) !== 12) {
+                        $fail('Aadhaar number must be exactly 12 digits.');
+                    }
+
+                    if ($request->verification_type === 'emirates_id' && strlen($digitsOnly) !== 15) {
+                        $fail('Emirates ID must be exactly 15 digits.');
+                    }
+                }
+            ],
+        ]);
+
+        $user->update([
+            'name'                   => $validated['name'],
+            'phone'                  => $validated['phone'],
+            'country_of_residence'   => $validated['country_of_residence'],
+            'verification_type'      => $validated['verification_type'],
+            'verification_id_number' => $validated['verification_id_number'],
+        ]);
+
+
+
+        return back()->with('status', 'Member information updated.');
     }
 
 }

@@ -27,6 +27,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'organization_id',
         'verification_type',
         'verification_image',
+        'id_card_front',
+        'id_card_back', 
         'verification_id_number',
         'password',
         'approved',
@@ -74,6 +76,20 @@ class User extends Authenticatable implements MustVerifyEmail
             : null;
     }
 
+    public function getIdCardFrontUrlAttribute()
+    {
+        return $this->id_card_front
+            ? asset('storage/' . $this->id_card_front)
+            : null;
+    }
+
+    public function getIdCardBackUrlAttribute()
+    {
+        return $this->id_card_back
+            ? asset('storage/' . $this->id_card_back)
+            : null;
+    }
+
     public function rejections()
     {
         return $this->hasMany(MemberRejection::class);
@@ -88,10 +104,10 @@ class User extends Authenticatable implements MustVerifyEmail
      * Generate the next membership code for the given org & category.
      * Format: {ORG_PREFIX}{NNNNN}{CATEGORY_PREFIX}, where NNNNN starts at 10001.
      */
-    public static function nextMembershipCode(Organization $org, MembershipCategory $category): string
+    public static function nextMembershipCode(Organization $org, Membership $membership): string
     {
         $orgPrefix = trim((string) $org->org_prefix) ?: 'ORG';
-        $catPrefix = trim((string) $category->prefix) ?: 'CAT';
+        $catPrefix = trim((string) $membership->prefix) ?: 'CAT';
 
         // Find the last code that matches ORG%CAT for this organization
         $lastCode = static::query()
@@ -101,7 +117,7 @@ class User extends Authenticatable implements MustVerifyEmail
             ->orderByDesc('id')
             ->value('membership_code');
 
-        $base = 10001;
+        $base = 1001;
         $next = $base;
 
         if ($lastCode) {

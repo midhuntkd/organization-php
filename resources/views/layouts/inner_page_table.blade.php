@@ -20,7 +20,7 @@
     @stack('styles')
 </head>
 
-<body class="hold-transition light-skin sidebar-mini theme-primary fixed">
+<body class="hold-transition light-skin sidebar-mini theme-primary dark-skin fixed">
 
     <div class="wrapper">
         <div id="loader"></div>

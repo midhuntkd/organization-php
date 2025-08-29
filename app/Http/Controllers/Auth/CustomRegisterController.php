@@ -11,12 +11,10 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CustomRegisterController extends Controller
 {
@@ -32,14 +30,23 @@ class CustomRegisterController extends Controller
      */
     public function sendOtp(Request $request, Organization $organization)
     {
-        $validated = $request->validate([
+
+        $validator = Validator::make($request->all(), [
             'email' => [
                 'required',
                 'email',
-                // unique per org
                 Rule::unique('users', 'email')->where(fn($q) => $q->where('organization_id', $organization->id)),
             ],
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
 
         $email = strtolower($validated['email']);
         $otp   = (string) random_int(100000, 999999);
@@ -68,7 +75,7 @@ class CustomRegisterController extends Controller
 
         Mail::to($email)->send(new RegisterOTPMail($organization, $otp));
 
-        return response()->json(['message' => "OTP sent to your email. It expires in {$ttl} minutes."]);
+        return response()->json(['message' => "OTP sent to your email. It expires in {$ttl} minutes.", 'success' => true]);
     }
 
     /**

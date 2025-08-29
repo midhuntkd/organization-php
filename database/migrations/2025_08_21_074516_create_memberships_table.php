@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('memberships', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('membership_category_id')->constrained('membership_categories')->cascadeOnDelete();
+            //$table->foreignId('membership_category_id')->constrained('membership_categories')->cascadeOnDelete();
             $table->string('name');
             $table->string('prefix', 20);
             $table->decimal('joining_fee', 10, 2)->default(0);

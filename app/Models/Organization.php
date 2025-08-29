@@ -80,4 +80,9 @@ class Organization extends Model
     {
         return static::where('slug', $slug)->firstOrFail();
     }
+
+    public function memberships()
+    {
+        return $this->hasMany(Membership::class);
+    }
 }

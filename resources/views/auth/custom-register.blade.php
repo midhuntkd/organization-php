@@ -1,7 +1,7 @@
 @extends('layouts.custom_auth')
 
 @section('content')
-<div class="bg-white rounded10 shadow-lg  my-auto  px-10 pb-20">
+<div class="rounded10 shadow-lg  my-auto  px-10 pb-20 col-10" style="background-color: rgba(63, 66, 84, .65);">
     <div class="content-top-agile p-20 pb-0">
         <h2 class="text-primary fw-600">Member Registration</h2>
         <p class="mb-0 text-fade">Create your account for {{ $organization->name }}</p>
@@ -18,12 +18,12 @@
         @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
         @endif
-
+        <div class="alert alert-danger" id="ajaxError">
+        </div>
         <form id="registerForm"
             method="POST"
             action="{{ route('custom_register.submit', $organization->slug) }}"
-            enctype="multipart/form-data"
-            novalidate>
+            enctype="multipart/form-data">
             @csrf
 
             {{-- 1) EMAIL + SEND OTP --}}
@@ -102,7 +102,7 @@
                             id="phoneInput"
                             class="form-control @error('phone') is-invalid @enderror"
                             value="{{ old('phone') }}"
-                            placeholder="50 123 4567"
+                            placeholder="Enter phone number"
                             required>
                     </div>
                     <small class="text-muted">Prefix updates with country: +971 (UAE) or +91 (India). We store the full number with prefix.</small>
@@ -141,6 +141,7 @@
                     <input type="text"
                         name="verification_id_number"
                         id="verification_id_number"
+                        required
                         class="form-control @error('verification_id_number') is-invalid @enderror"
                         value="{{ old('verification_id_number') }}"
                         placeholder="Aadhaar: 12 digits, Emirates ID: 15 digits">
@@ -199,6 +200,8 @@
 
         const radios = document.querySelectorAll("input[name='verification_type']");
         const idField = document.getElementById("verification_id_number");
+        const ajaxErrorDiv = document.getElementById('ajaxError');
+        ajaxErrorDiv.style.display = 'none';
 
         // Country → phone prefix behavior
         function updatePrefix() {
@@ -218,6 +221,25 @@
             countrySelect.addEventListener('change', updatePrefix);
             updatePrefix(); // initial
         }
+
+        function applyPhoneRule() {
+            let val = phoneInput.value.replace(/\D/g, ''); // keep digits only
+            let maxLen = 10; // default India
+
+            if (countrySelect.value === 'UAE') {
+                maxLen = 9;
+            }
+
+            if (val.length > maxLen) {
+                val = val.slice(0, maxLen);
+            }
+
+            phoneInput.value = val;
+        }
+
+        phoneInput.addEventListener('input', applyPhoneRule);
+        // enforce on country change
+        countrySelect.addEventListener('change', applyPhoneRule);
 
         radios.forEach(radio => {
             radio.addEventListener("change", function() {
@@ -250,7 +272,7 @@
             }
         });
 
-        
+
 
         // 1) SEND OTP (AJAX)
         sendBtn?.addEventListener('click', function() {
@@ -274,14 +296,26 @@
                 })
                 .then(async res => {
                     const data = await res.json().catch(() => ({}));
-                    if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
-
-                    // Success → lock email, reveal OTP block
-                    emailEl.readOnly = true;
-                    sendBtn.classList.add('disabled');
-                    otpHint.classList.remove('d-none');
-                    otpBlock.classList.remove('d-none');
-                    otpEl.focus();
+                    //if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
+                    if (!res.ok) {
+                        let message = 'Your email is invalid or already registered.';
+                        if (data.errors && data.errors.email) {
+                            message = data.errors.email[0];
+                        } else if (data.message) {
+                            message = data.message;
+                        }
+                        ajaxErrorDiv.style.display = 'block';
+                        ajaxErrorDiv.innerHTML = message;
+                    } else {
+                        // Success → lock email, reveal OTP block
+                        ajaxErrorDiv.innerHTML = '';
+                        ajaxErrorDiv.style.display = 'none';
+                        emailEl.readOnly = true;
+                        sendBtn.classList.add('disabled');
+                        otpHint.classList.remove('d-none');
+                        otpBlock.classList.remove('d-none');
+                        otpEl.focus();
+                    }
                 })
                 .catch(err => alert(err.message))
                 .finally(() => {

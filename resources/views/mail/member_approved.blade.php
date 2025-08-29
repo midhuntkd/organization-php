@@ -11,9 +11,9 @@ Verify Email
 @endisset
 
 @component('mail::panel')
-**Login URL:** {{ $loginUrl }}
-**Email:** {{ $user->email }}
-**Temporary Password:** {{ $plainPassword }}
+**Login URL:** {{ $loginUrl }} <br />
+**Email:** {{ $user->email }} <br />
+**Temporary Password:** {{ $plainPassword }} <br />
 @endcomponent
 
 > For your security, you’ll be asked to **set a new password** after your first login.

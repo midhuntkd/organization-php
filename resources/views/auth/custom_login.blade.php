@@ -1,7 +1,7 @@
 @extends('layouts.custom_auth')
 
 @section('content')
-<div class="bg-white rounded10 shadow-lg my-auto  px-10 pb-20">
+<div class="bg-white rounded10 shadow-lg my-auto  px-10 pb-20 col-10" style="background-color: rgba(63, 66, 84, .65);">
     <div class="content-top-agile p-20 pb-0">
         <h2 class="text-primary fw-600">Let's Get Started</h2>
         <p class="mb-0 text-fade">Sign in to continue the membership.</p>
