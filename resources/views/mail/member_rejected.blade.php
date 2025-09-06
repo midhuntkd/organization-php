@@ -10,8 +10,12 @@ Your membership request for **{{ $organization->name }}** has been **rejected**.
 {{ $description }}
 @endisset
 
-If you believe this is a mistake, please reply to this email or contact support.
+If you believe this is a mistake, please reply to this email or You can resubmit request .
+
+@component('mail::button', ['url' => $resubmitUrl])
+Resubmit Request
+@endcomponent
 
 Thanks,<br>
-{{ config('app.name') }}
+{{ $organization->name }}
 @endcomponent

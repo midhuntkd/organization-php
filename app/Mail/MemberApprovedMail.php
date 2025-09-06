@@ -27,7 +27,8 @@ class MemberApprovedMail extends Mailable
     {
         $subject = 'Your account is approved - ' . $this->organization->name;
 
-        return $this->subject($subject)
+        return $this->from('alerts@member.org.in', $this->organization->name)
+            ->subject($subject)
             ->markdown('mail.member_approved', [
                 'user'         => $this->user,
                 'organization' => $this->organization,

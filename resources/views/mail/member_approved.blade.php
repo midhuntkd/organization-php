@@ -21,5 +21,5 @@ Verify Email
 If you didn’t request this account, please ignore this email.
 
 Thanks,
-{{ config('app.name') }}
+{{ $organization->name }}
 @endcomponent

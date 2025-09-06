@@ -18,7 +18,8 @@ class RegisterOTPMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Your Registration OTP')
+        return $this->from('alerts@member.org.in', $this->organization->name)
+        ->subject('Your Registration OTP')
             ->markdown('mail.register_otp', [
             'otp'         => $this->otp,
             'organization' => $this->organization,

@@ -60,7 +60,7 @@ class Organization extends Model
     // Accessors for full URLs (handles storage disk)
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->logo ? Storage::url($this->logo) : null;
+        return $this->logo ? asset('storage/' . $this->logo) : null;
     }
 
     public function getBackgroundImageUrlAttribute(): ?string

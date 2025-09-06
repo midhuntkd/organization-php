@@ -3,8 +3,8 @@
 @section('content')
 <div class="rounded10 shadow-lg  my-auto  px-10 pb-20 col-10" style="background-color: rgba(63, 66, 84, .65);">
     <div class="content-top-agile p-20 pb-0">
-        <h2 class="text-white fw-600">Member Registration</h2>
-        <p class="mb-0 text-fade">Create your account for {{ $organization->name }}</p>
+        <h2 class="text-white fw-600">Member Registration Resubmit</h2>
+        <p class="mb-0 text-fade">Resubmit your account information for {{ $organization->name }}</p>
     </div>
 
     <div class="p-40">
@@ -22,7 +22,7 @@
         </div>
         <form id="registerForm"
             method="POST"
-            action="{{ route('custom_register.submit', $organization->slug) }}"
+            action="{{ route('member_register.resubmit', [$organization->slug,$user->id]) }}"
             enctype="multipart/form-data">
             @csrf
 
@@ -34,37 +34,14 @@
                         name="email"
                         id="emailInput"
                         class="form-control @error('email') is-invalid @enderror"
-                        value="{{ old('email') }}"
+                        value="{{ old('email') }} {{ $user->email }}"
                         placeholder="you@example.com"
                         required>
-                    <button type="button" id="sendOtpBtn" class="btn btn-primary">
-                        Send OTP
-                    </button>
                 </div>
                 @error('email') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                <small id="otpHint" class="text-muted d-none">OTP sent to your email (valid for 10 minutes).</small>
             </div>
-
-
-            <div id="otpBlock" class="mb-3 d-none">
-                <label class="form-label">Enter OTP <span class="text-danger">*</span></label>
-                <div class="input-group">
-                    <input type="text"
-                        name="otp"
-                        id="otpInput"
-                        class="form-control @error('otp') is-invalid @enderror"
-                        maxlength="6"
-                        placeholder="6-digit code">
-                    <button type="button" id="verifyOtpBtn" class="btn btn-success">
-                        Verify OTP
-                    </button>
-                </div>
-                @error('otp') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                <small id="otpVerifiedMsg" class="text-success d-none">OTP verified. You can continue.</small>
-            </div>
-
             {{-- 3) REST OF FORM (hidden until OTP verified) --}}
-            <div id="restBlock" class="d-none">
+            <div id="restBlock" class="d-block">
 
                 {{-- Name --}}
                 <div class="mb-3">
@@ -72,7 +49,7 @@
                     <input type="text"
                         name="name"
                         class="form-control @error('name') is-invalid @enderror"
-                        value="{{ old('name') }}"
+                        value="{{ old('name') }} {{ $user->name }}"
                         required>
                     @error('name') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
@@ -85,8 +62,8 @@
                         class="form-select @error('country_of_residence') is-invalid @enderror"
                         required>
                         <option value="">-- Select --</option>
-                        <option value="UAE" @selected(old('country_of_residence')==='UAE' )>UAE</option>
-                        <option value="India" @selected(old('country_of_residence')==='India' )>India</option>
+                        <option value="UAE" @selected(old('country_of_residence')==='UAE' ) @selected($user->country_of_residence ==='UAE' )>UAE</option>
+                        <option value="India" @selected(old('country_of_residence')==='India' ) @selected($user->country_of_residence ==='India')>India</option>
                     </select>
                     @error('country_of_residence') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
@@ -101,11 +78,10 @@
                             name="phone"
                             id="phoneInput"
                             class="form-control @error('phone') is-invalid @enderror"
-                            value="{{ old('phone') }}"
+                            value="{{ old('phone') }} {{ $user->phone }}"
                             placeholder="Enter phone number"
                             required>
                     </div>
-                    <small class="text-muted">Prefix updates with country: +971 (UAE) or +91 (India). We store the full number with prefix.</small>
                     @error('phone') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
@@ -119,7 +95,9 @@
                                 name="verification_type"
                                 id="aadhaar"
                                 value="aadhaar"
-                                @checked(old('verification_type')==='aadhaar' )>
+                                @checked(old('verification_type')==='aadhaar' )
+                                @checked($user->verification_type ==='aadhaar' )
+                            required>
                             <label class="form-check-label" for="aadhaar">Aadhaar (India)</label>
                         </div>
                         <div class="form-check">
@@ -128,7 +106,9 @@
                                 name="verification_type"
                                 id="emirates_id"
                                 value="emirates_id"
-                                @checked(old('verification_type')==='emirates_id' )>
+                                @checked(old('verification_type')==='emirates_id' )
+                                @checked($user->verification_type ==='emirates_id' )
+                            required>
                             <label class="form-check-label" for="emirates_id">Emirates ID (UAE)</label>
                         </div>
                     </div>
@@ -143,35 +123,35 @@
                         id="verification_id_number"
                         required
                         class="form-control @error('verification_id_number') is-invalid @enderror"
-                        value="{{ old('verification_id_number') }}"
+                        value="{{ old('verification_id_number') }} {{ $user->verification_id_number }}"
                         placeholder="Aadhaar: 12 digits, Emirates ID: 15 digits">
                     @error('verification_id_number') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
                 {{-- ID Card Front --}}
                 <div class="mb-3">
+                    <img src="{{ $user->id_card_front_url }}" height="70" /><br />
                     <label class="form-label">ID Card (Front) <span class="text-danger">*</span></label>
                     <input type="file"
                         name="id_card_front"
                         class="form-control @error('id_card_front') is-invalid @enderror"
-                        accept="image/*"
-                        required>
+                        accept="image/*">
                     @error('id_card_front') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
                 {{-- ID Card Back --}}
                 <div class="mb-3">
+                    <img src="{{ $user->id_card_back_url }}" height="70" /><br />
                     <label class="form-label">ID Card (Back) <span class="text-danger">*</span></label>
                     <input type="file"
                         name="id_card_back"
                         class="form-control @error('id_card_back') is-invalid @enderror"
-                        accept="image/*"
-                        required>
+                        accept="image/*">
                     @error('id_card_back') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                    <button type="submit" class="btn btn-primary w-100">Resubmit</button>
                 </div>
             </div>
         </form>
@@ -203,75 +183,20 @@
         const ajaxErrorDiv = document.getElementById('ajaxError');
         ajaxErrorDiv.style.display = 'none';
 
-        const aadhaarRadio = document.getElementById('aadhaar');
-        const emiratesRadio = document.getElementById('emirates_id');
-
-        function syncVerificationTypeWithCountry() {
-            const country = countrySelect.value;
-
-            // Auto-pick type based on country
-            if (country === 'India') {
-                if (aadhaarRadio && !aadhaarRadio.checked) {
-                    aadhaarRadio.checked = true;
-                    // trigger the same formatting you already have on radio change
-                    aadhaarRadio.dispatchEvent(new Event('change'));
-                }
-            } else if (country === 'UAE') {
-                if (emiratesRadio && !emiratesRadio.checked) {
-                    emiratesRadio.checked = true;
-                    emiratesRadio.dispatchEvent(new Event('change'));
-                }
-            }
-        }
-
-        function applyPhoneRule() {
-            let val = phoneInput.value.replace(/\D/g, ''); // keep digits only
-            let maxLen = 10; // default India
-
-            if (countrySelect.value === 'UAE') {
-                maxLen = 9;
-            }
-
-            if (val.length > maxLen) {
-                val = val.slice(0, maxLen);
-            }
-
-            phoneInput.value = val;
-        }
+        
 
         // Country → phone prefix behavior
         function updatePrefix() {
             const c = countrySelect.value;
             const prefix = (c === 'India') ? '+91' : '+971';
             phonePrefix.textContent = prefix;
-            phonePrefixInput.value = prefix;
-            // Initialize or change leading prefix in phone input
-            // if (!phoneInput.value) {
-            //     phoneInput.value = prefix + ' ';
-            // } else if (!phoneInput.value.startsWith(prefix)) {
-            //     const digits = phoneInput.value.replace(/^\+?\d+\s*/, '').trim();
-            //     phoneInput.value = prefix + ' ' + digits;
-            // }
         }
         if (countrySelect) {
-            // Extend your existing country change handlers
-            countrySelect.addEventListener('change', function() {
-                updatePrefix(); // your existing function
-                applyPhoneRule(); // your existing function
-                syncVerificationTypeWithCountry(); // NEW
-                // Clear the ID field when country changes (optional but recommended)
-                idField.value = '';
-            });
-
-            // On first load, make sure they align too
-            updatePrefix();
-            applyPhoneRule();
-            syncVerificationTypeWithCountry(); // initial
+            countrySelect.addEventListener('change', updatePrefix);
+            updatePrefix(); // initial
         }
 
-
-
-        phoneInput.addEventListener('input', applyPhoneRule);
+        
 
         radios.forEach(radio => {
             radio.addEventListener("change", function() {

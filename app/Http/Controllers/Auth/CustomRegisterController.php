@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Mail\RegisterOTPMail;
+use App\Mail\RegisterSuccessMail;
 use App\Models\EmailOtp;
 use App\Models\Organization;
 use App\Models\User;
@@ -145,8 +146,8 @@ class CustomRegisterController extends Controller
                     }
                 }
             ],
-            'id_card_front' => ['required', File::image()->max(2 * 1024)],
-            'id_card_back'  => ['required', File::image()->max(2 * 1024)],
+            'id_card_front' => ['required', File::image()->max(20 * 1024)],
+            'id_card_back'  => ['required', File::image()->max(20 * 1024)],
         ]);
 
         $email = strtolower($validated['email']);
@@ -194,9 +195,136 @@ class CustomRegisterController extends Controller
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
+
+        Mail::to($email)->send(new RegisterSuccessMail($organization, $user));
         //$user->sendEmailVerificationNotification();
 
         return redirect()->route('member_login', $organization->slug)->with('status', 'Your acount has been registred successfully. Please wait for admin approval before logging in.');
+    }
+
+
+    public function resubmit(Organization $organization, User $user)
+    {
+        //$organization = Organization::where('is_default', true)->first();
+        //return view('auth.custom-register', compact('organization'));
+
+        if(!$user){
+            abort(404);
+        }
+
+        if($user->approved){
+            return redirect()->route('member_login', $organization->slug)->with('status', 'Your acount already approved. Please login.');
+        }
+
+        return view('auth.custom-resubmit-register', compact('organization', 'user'));
+    }
+
+    public function resubmitAction(Request $request, Organization $organization, User $user)
+    {
+
+        if (!$user) {
+            abort(404);
+        }
+
+        if ($user->approved) {
+            return redirect()->route('member_login', $organization->slug)->with('status', 'Your acount already approved. Please login.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')
+                ->ignore($user->id)
+                ->where(fn($q) => $q->where('organization_id', $organization->id)),
+            ],
+            'phone' => 'required|string|max:20',
+            'country_of_residence' => 'required|in:India,UAE',
+            'verification_type'      => 'required|in:aadhaar,emirates_id',
+            'verification_id_number' => [
+                'required',
+                function ($attribute, $value, $fail) use ($request) {
+                    $digitsOnly = preg_replace('/\D/', '', $value);
+
+                    if ($request->verification_type === 'aadhaar' && strlen($digitsOnly) !== 12) {
+                        $fail('Aadhaar number must be exactly 12 digits.');
+                    }
+
+                    if ($request->verification_type === 'emirates_id' && strlen($digitsOnly) !== 15) {
+                        $fail('Emirates ID must be exactly 15 digits.');
+                    }
+                }
+            ],
+        ]);
+
+        $email = strtolower($validated['email']);
+
+        // $row = EmailOtp::where('organization_id', $organization->id)
+        //     ->where('email', $email)
+        //     ->first();
+
+        // if (!$row || $row->isExpired() || !$row->verified_at || $row->otp !== (string) $request->otp) {
+        //     return back()->withErrors(['otp' => 'OTP not verified or expired. Please verify again.'])->withInput();
+        // }
+
+        // store files (configure 'public' disk to your shared-hosting public_html/storage)
+
+        $frontPath = $user->id_card_front;
+        $backPath = $user->id_card_back;
+        if ($request->hasFile('id_card_front')) {
+            $frontPath = $request->file('id_card_front')->store('verifications', 'public');
+        }
+        if ($request->hasFile('id_card_back')) {
+            $backPath  = $request->file('id_card_back')->store('verifications', 'public');
+        }
+
+        $phone = preg_replace('/\s+/', '', $request->input('phone')); // strip spaces
+
+        if ($request->country_of_residence === 'UAE') {
+            if (!str_starts_with($phone, '+971')) {
+                // remove leading zeros if user typed "050..."
+                $phone = ltrim($phone, '0');
+                $phone = '+971' . $phone;
+            }
+        } elseif ($request->country_of_residence === 'India') {
+            if (!str_starts_with($phone, '+91')) {
+                $phone = ltrim($phone, '0');
+                $phone = '+91' . $phone;
+            }
+        }
+
+
+        $user->update([
+            'name'                   => $validated['name'],
+            'email'                  => $email,
+            'phone'                  => $phone,
+            'country_of_residence'   => $validated['country_of_residence'],
+            'verification_type'      => $validated['verification_type'],
+            'verification_id_number' => $validated['verification_id_number'],
+            'id_card_front'          => $frontPath,
+            'id_card_back'           => $backPath,
+            'password'               => Hash::make(str()->password(12)), // temp, you’ll set via approve flow
+            'approved'               => false,
+            'rejected'               => false,
+        ]);
+
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole('member');
+        }
+
+        // delete OTP row to avoid reuse
+        //$row->delete();
+
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        $message = "Your resubmission successfully completed for **{{ $organization->name }}** . You will be notified once admin approved.";
+        Mail::to($email)->send(new RegisterSuccessMail($organization, $user, $message, 'Your Resubmission Successful'));
+        //$user->sendEmailVerificationNotification();
+
+        return redirect()->route('member_register.resubmit_view', [$organization->slug, $user->id])->with('status', 'Your resubmit request has been registred successfully. Please wait for admin approval before logging in.');
     }
 
 }

@@ -4,13 +4,13 @@
         <a href="#" class="logo">
             <!-- logo-->
             <div class="logo-mini w-40">
-                <span class="light-logo"><img src="{{ asset('hyper/images/logo-letter.png') }}" alt="logo"></span>
-                <span class="dark-logo"><img src="{{ asset('hyper/images/logo-white-letter.png') }}" alt="logo"></span>
+                <span class="light-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
+                <span class="dark-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
             </div>
-            <div class="logo-lg">
-                <span class="light-logo"><img src="{{ asset('hyper/images/logo-light-text.png') }}" alt="logo"></span>
-                <span class="dark-logo"><img src="{{ asset('hyper/images/logo-text.png') }}" alt="logo"></span>
-            </div>
+            <!-- <div class="logo-lg">
+                <span class="light-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
+                <span class="dark-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
+            </div> -->
         </a>
     </div>
     <!-- Header Navbar -->

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function ($table) {
+            $table->string('id_card_front', 255)->nullable()->after('remember_token');
             $table->string('id_card_back', 255)->nullable()->after('id_card_front');
             $table->string('user_image', 255)->nullable()->after('id_card_back');
         });

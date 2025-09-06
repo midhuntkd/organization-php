@@ -1,7 +1,7 @@
 <footer class="main-footer">
     &copy; <script>
         document.write(new Date().getFullYear())
-    </script> <a href="#">Organization</a>. All Rights Reserved.
+    </script> <a href="https://member.org.in/">member.org.in</a>. All Rights Reserved.
 </footer>
 
 <!-- quick_user_toggle -->

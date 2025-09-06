@@ -47,6 +47,9 @@ Route::post('/auth/precheck/{organization:slug?}', [CustomLoginController::class
     ->name('auth.precheck');
 
 
+Route::get('/member/register/{organization}/resubmit/{user}', [CustomRegisterController::class, 'resubmit'])->name('member_register.resubmit_view');
+Route::post('/member/register/{organization}/resubmit/{user}', [CustomRegisterController::class, 'resubmitAction'])->name('member_register.resubmit');
+
 Route::middleware(['auth', 'role:organization-admin'])
     ->prefix('{organization:slug}/admin')    
     ->name('orgadmin.')

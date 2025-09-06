@@ -5,5 +5,5 @@
 <p>This code expires in 10 minutes.</p>
 
 Thanks,<br>
-{{ config('app.name') }}
+{{ $organization->name }}
 @endcomponent

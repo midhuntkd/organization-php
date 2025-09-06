@@ -22,7 +22,7 @@ class MemberController extends Controller
     public function showMemberList(Organization $organization)
     {
         $members = User::role('member')->where(['organization_id' => $organization->id, 'approved' => 1])->with('organization')->get();
-        return view('admin.member_list', compact('members', 'organization'));
+        return view('admin.member_list_approve', compact('members', 'organization'));
     }
 
     public function showApprovalMemberList(Organization $organization)
@@ -39,7 +39,7 @@ class MemberController extends Controller
         }
 
         //abort_unless($user->organization_id === $organization->id, 403);
-        $plain = Str::password(12);
+        $plain = mt_rand(1000, 9999);
 
         // 1) Get default membership for this org
         $membership = Membership::with('category')

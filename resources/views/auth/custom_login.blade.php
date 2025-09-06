@@ -1,9 +1,9 @@
 @extends('layouts.custom_auth')
 
 @section('content')
-<div class="bg-white rounded10 shadow-lg my-auto  px-10 pb-20 col-10" style="background-color: rgba(63, 66, 84, .65);">
+<div class="rounded10 shadow-lg my-auto  px-10 pb-20 col-10" style="background-color: rgba(63, 66, 84, .65);">
     <div class="content-top-agile p-20 pb-0">
-        <h2 class="text-primary fw-600">Let's Get Started</h2>
+        <h2 class="text-white fw-600">Let's Get Started</h2>
         <p class="mb-0 text-fade">Sign in to continue the membership.</p>
     </div>
     <div class="p-40">
@@ -44,8 +44,8 @@
                 <div class="form-group">
                     <div class="input-group mb-3">
                         <span class="input-group-text bg-transparent"><i class="text-fade ti-email"></i></span>
-                        <input type="email" id="email" name="email" required class="form-control ps-15 bg-transparent" placeholder="Email">
-                        <button type="button" id="verifyBtn" class="btn btn-outline-primary">
+                        <input type="email" id="email" name="email" required class="form-control ps-15" placeholder="Email">
+                        <button type="button" id="verifyBtn" class="btn btn-primary">
                             <span class="verify-text">Verify</span>
                             <span class="verify-spinner d-none">...</span>
                         </button>
@@ -56,7 +56,7 @@
                 <div class="form-group">
                     <div class="input-group mb-3">
                         <span class="input-group-text bg-transparent"><i class="text-fade ti-lock"></i></span>
-                        <input type="password" id="password" name="password" required class="form-control ps-15 bg-transparent" placeholder="Password" disabled>
+                        <input type="password" id="password" name="password" required class="form-control ps-15" placeholder="Password" disabled>
                     </div>
                 </div>
                 <div class="row">
@@ -70,7 +70,7 @@
                     @if (Route::has('password.request'))
                     <div class="col-6">
                         <div class="fog-pwd text-end">
-                            <a href="{{ route('password.request') }}" class="text-primary fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot Password?</a><br>
+                            <a href="{{ route('password.request') }}" class="text-white fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot Password?</a><br>
                         </div>
                     </div>
                     @endif
@@ -81,7 +81,7 @@
                 </div>
             </form>
             <div class="text-center">
-                <p class="mt-15 mb-0 text-fade">Don't have an account? <a href="{{ route('custom_register', $organization->slug) }}" class="text-primary ms-5">Sign Up</a></p>
+                <p class="mt-15 mb-0 text-fade">Don't have an account? <a href="{{ route('custom_register', $organization->slug) }}" class="text-white ms-5">Sign Up</a></p>
             </div>
     </div>
 </div>

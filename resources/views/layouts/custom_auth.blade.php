@@ -24,19 +24,19 @@
 
 
     <div class="h-p100">
-        <div class="row justify-content-md-center h-p100" style="background-image: url('{{ asset('hyper/images/auth-bg/bg-16.jpg') }}')">
+        <div class="row justify-content-md-center min-h-p100 py-4" style="background-image: url('{{ asset('hyper/images/auth-bg/bg-16.jpg') }}')">
 
             <div class="col-12">
                 <div class="row g-0 h-p100 justify-content-center align-items-lg-center">
                     <div class="col-lg-6 h-p100 align-items-lg-center d-lg-flex justify-content-md-center d-none">
                         <a href="#" target="_blank" style="text-decoration: none;">
-                            <img src="{{ asset('hyper/images/logo-light-text3.png') }}" alt="Hyper Admin">
+                            <img src="{{ $organization->logo_url }}" alt="Hyper Admin">
                         </a>
                     </div>
                     <div class="col-lg-6 align-items-center d-flex h-p100 flex-column flex-lg-row px-3">
                         <div class="py-20 text-center justify-content-center d-lg-none">
                             <a href="#" target="_blank" style="text-decoration: none;">
-                                <img src="{{ asset('hyper/images/logo-light-text3.png') }}" alt="Hyper Admin">
+                                <img src="{{ $organization->logo_url }}" alt="Hyper Admin">
                             </a>
                         </div>
                         @yield('content')

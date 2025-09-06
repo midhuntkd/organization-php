@@ -24,12 +24,16 @@ class MemberRejectedMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Application Rejected - ' . $this->organization->name)
+
+        $resubmitUrl = route('member_register.resubmit_view', [$this->organization->slug, $this->user->id]);
+        return $this->from('alerts@member.org.in', $this->organization->name)
+        ->subject('Application Rejected - ' . $this->organization->name)
             ->markdown('mail.member_rejected', [
                 'user'         => $this->user,
                 'organization' => $this->organization,
                 'title'        => $this->title,
                 'description'  => $this->description,
+                'resubmitUrl'  => $resubmitUrl,
             ]);
     }
 }

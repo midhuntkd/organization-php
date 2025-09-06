@@ -28,10 +28,19 @@ class AdminSeeder extends Seeder
         ]);
 
         $sampleOrganization = Organization::firstOrCreate([
-            'name'              => 'Sample Organization',
+            'name'              => 'Alappuzha Jilla Pravasi Samajam',
             'is_default'        => true,
-            'org_prefix'        => 'SMP',
-            'slug'              => 'Sample-organization',
+            'org_prefix'        => 'AJPS',
+            'slug'              => 'alappuzha-jilla-Pravasi-samajam',
+            'logo'              => 'organizations/logos/default.png',  // Put a file in storage/app/public/organizations/logos
+            'background_image'  => 'organizations/backgrounds/default-bg.jpg',
+        ]);
+
+        $sampleOrganization1 = Organization::firstOrCreate([
+            'name'              => 'AJPSTest',
+            'is_default'        => true,
+            'org_prefix'        => 'AJPSTest',
+            'slug'              => 'apjs',
             'logo'              => 'organizations/logos/default.png',  // Put a file in storage/app/public/organizations/logos
             'background_image'  => 'organizations/backgrounds/default-bg.jpg',
         ]);
@@ -58,11 +67,11 @@ class AdminSeeder extends Seeder
 
         // Create admin user
         $admin = User::firstOrCreate([
-            'email' => 'admin@mainOrganization.com',
+            'email' => 'admin@member.org.in',
         ], [
             'name' => 'Super Admin',
             'organization_id' => $organization->id,
-            'password' => Hash::make('admin@147258'), // change after first login
+            'password' => Hash::make('Admin@1234'), // change after first login
             'email_verified_at' => now(),
             'approved' => true,
             'password_changed' => true,
@@ -72,16 +81,29 @@ class AdminSeeder extends Seeder
         $admin->assignRole($superAdminRole);
 
         $organizationAdmin = User::firstOrCreate([
-            'email' => 'admin@sampleOrganization.com',
+            'email' => 'alappuzhajillapravasisamajam@gmail.com',
         ], [
             'name' => 'ORG Admin',
             'organization_id' => $sampleOrganization->id,
-            'password' => Hash::make('admin@147258'), // change after first login
+            'password' => Hash::make('Admin@1234'), // change after first login
             'email_verified_at' => now(),
             'approved' => true,
             'password_changed' => true,
         ]);
 
         $organizationAdmin->assignRole($organizationAdminRole);
+
+        $organizationAdmin1 = User::firstOrCreate([
+            'email' => 'Admin@ajpstest.com',
+        ], [
+            'name' => 'ORG Admin',
+            'organization_id' => $sampleOrganization1->id,
+            'password' => Hash::make('Admin@AJPS1'), // change after first login
+            'email_verified_at' => now(),
+            'approved' => true,
+            'password_changed' => true,
+        ]);
+
+        $organizationAdmin1->assignRole($organizationAdminRole);
     }
 }
