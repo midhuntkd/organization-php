@@ -22,6 +22,8 @@ Route::get('/', function () {
 Route::get('/member/register/{organization}', [CustomRegisterController::class, 'showRegisterForm'])->name('custom_register');
 Route::post('/member/register/{organization}', [CustomRegisterController::class, 'register'])->name('custom_register.submit');
 
+Route::post('/member/register/{organization}/ajax', [CustomRegisterController::class, 'registerAjax'])->name('custom_register.ajax_submit');
+
 // AJAX: send OTP to email
 Route::post('/member/register/send-otp/{organization}', [CustomRegisterController::class, 'sendOtp'])
     ->name('custom_register.send_otp');

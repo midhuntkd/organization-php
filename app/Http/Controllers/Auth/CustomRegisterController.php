@@ -202,6 +202,96 @@ class CustomRegisterController extends Controller
         return redirect()->route('member_login', $organization->slug)->with('status', 'Your acount has been registred successfully. Please wait for admin approval before logging in.');
     }
 
+    public function registerAjax(Request $request, Organization $organization)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->where(fn($q) => $q->where('organization_id', $organization->id)),
+            ],
+            'phone' => 'required|string|max:20',
+            'country_of_residence' => 'required|in:India,UAE',
+            'verification_type'      => 'required|in:aadhaar,emirates_id',
+            'verification_id_number' => [
+                'required',
+                function ($attribute, $value, $fail) use ($request) {
+                    $digitsOnly = preg_replace('/\D/', '', $value);
+
+                    if ($request->verification_type === 'aadhaar' && strlen($digitsOnly) !== 12) {
+                        $fail('Aadhaar number must be exactly 12 digits.');
+                    }
+
+                    if ($request->verification_type === 'emirates_id' && strlen($digitsOnly) !== 15) {
+                        $fail('Emirates ID must be exactly 15 digits.');
+                    }
+                }
+            ],
+            'id_card_front' => ['required', File::image()->max(20 * 1024)],
+            'id_card_back'  => ['required', File::image()->max(20 * 1024)],
+        ]);
+
+        $email = strtolower($validated['email']);
+
+        $row = EmailOtp::where('organization_id', $organization->id)
+            ->where('email', $email)
+            ->first();
+        //echo "<pre>";print_r($row); exit;
+
+
+        if (!$row || $row->isExpired() || !$row->verified_at || $row->otp !== (string) $request->otp) {
+            return response(400)->json([
+                'success' => false,
+                'message' => 'OTP not verified or expired. Please verify again.'
+            ]);
+        }
+
+        //$imagePath = $request->file('verification_image')->store('verifications', 'public');
+
+        // store files (configure 'public' disk to your shared-hosting public_html/storage)
+        $frontPath = $request->file('id_card_front')->store('verifications', 'public');
+        $backPath  = $request->file('id_card_back')->store('verifications', 'public');
+
+        // echo "<pre>";
+        // print_r($validated); exit;
+        $user = User::create([
+            'organization_id'        => $organization->id,
+            'name'                   => $validated['name'],
+            'email'                  => $email,
+            'phone'                  => $request->phone_prefix . $validated['phone'],
+            'country_of_residence'   => $validated['country_of_residence'],
+            'verification_type'      => $validated['verification_type'],
+            'verification_id_number' => $validated['verification_id_number'],
+            'id_card_front'          => $frontPath,
+            'id_card_back'           => $backPath,
+            'password'               => Hash::make(str()->password(12)), // temp, you’ll set via approve flow
+            'approved'               => false,
+            'rejected'               => false,
+        ]);
+
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole('member');
+        }
+
+        // delete OTP row to avoid reuse
+        $row->delete();
+
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        Mail::to($email)->send(new RegisterSuccessMail($organization, $user));
+        //$user->sendEmailVerificationNotification();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your acount has been registred successfully. Please wait for admin approval before logging in.',
+            'user_id' => $user->id
+        ]);
+        
+    }
+
 
     public function resubmit(Organization $organization, User $user)
     {

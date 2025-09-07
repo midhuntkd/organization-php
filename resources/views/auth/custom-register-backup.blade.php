@@ -20,9 +20,9 @@
         @endif
         <div class="alert alert-danger" id="ajaxError">
         </div>
-
-        <div class="alert alert-success d-none" id="ajaxSuccess"></div>
         <form id="registerForm"
+            method="POST"
+            action="{{ route('custom_register.submit', $organization->slug) }}"
             enctype="multipart/form-data">
             @csrf
 
@@ -105,8 +105,7 @@
                             placeholder="Enter phone number"
                             required>
                     </div>
-                    <small class="text-muted" style="color:#fff!important">Prefix updates with country: +971 (UAE) or +91 (India). We store the full number with prefix.</small>
-                    <div class="error" id="phoneError" style="color:#ff0000!important"></div>
+                    <small class="text-muted" style="color:#fff">Prefix updates with country: +971 (UAE) or +91 (India). We store the full number with prefix.</small>
                     @error('phone') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
@@ -146,7 +145,6 @@
                         class="form-control @error('verification_id_number') is-invalid @enderror"
                         value="{{ old('verification_id_number') }}"
                         placeholder="Aadhaar: 12 digits, Emirates ID: 15 digits">
-                    <div class="error" id="vidError" style="color:#ff0000!important"></div>
                     @error('verification_id_number') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
@@ -158,7 +156,6 @@
                         class="form-control @error('id_card_front') is-invalid @enderror"
                         accept="image/*"
                         required>
-                    <div class="error" id="idFrontError" style="color:#ff0000!important"></div>
                     @error('id_card_front') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
@@ -170,7 +167,6 @@
                         class="form-control @error('id_card_back') is-invalid @enderror"
                         accept="image/*"
                         required>
-                    <div class="error" id="idBackError" style="color:#ff0000!important"></div>
                     @error('id_card_back') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
 
@@ -179,11 +175,6 @@
                 </div>
             </div>
         </form>
-        <div class="text-center mt-3 d-none col-12" id="afterSubmitBlock">
-            <a href="{{ route('member_login', $organization->slug) }}" class="text-white text-fade">
-                <!-- <button type="button" class="btn btn-primary w-100">Login</button> -->
-            </a>
-        </div>
     </div>
 </div>
 @endsection
@@ -215,6 +206,26 @@
         const aadhaarRadio = document.getElementById('aadhaar');
         const emiratesRadio = document.getElementById('emirates_id');
 
+
+        const nameEl = document.querySelector('input[name="name"]');
+        const countryEl = document.getElementById('countrySelect');
+        const phoneEl = document.getElementById('phoneInput');
+
+        const vTypeEls = document.querySelectorAll('input[name="verification_type"]');
+        const vIdEl = document.getElementById('verification_id_number');
+
+        const frontEl = document.querySelector('input[name="id_card_front"]');
+        const backEl = document.querySelector('input[name="id_card_back"]');
+
+        const MAX_IMG_MB = 20;
+        const MAX_IMG_BYTES = MAX_IMG_MB * 1024 * 1024;
+        const digitsOnly = s => (s || '').replace(/\D+/g, '');
+        const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((s || '').trim());
+        const getCheckedValue = nodes => {
+            for (const n of nodes)
+                if (n.checked) return n.value;
+            return null;
+        };
 
         function syncVerificationTypeWithCountry() {
             const country = countrySelect.value;
@@ -409,105 +420,172 @@
                     verifyBtn.disabled = false;
                 });
         });
+    });
 
 
-        const form = document.getElementById('registerForm');
-        const ajaxSuccessDiv = document.getElementById('ajaxSuccess');
+    function showError(inputEl, msg) {
+        let container = inputEl?.closest('.mb-3') || inputEl?.parentElement || inputEl;
+        let err = container.querySelector('.client-error');
+        if (!err) {
+            err = document.createElement('div');
+            err.className = 'client-error invalid-feedback d-block';
+            container.appendChild(err);
+        }
+        err.textContent = msg;
+        inputEl?.classList?.add('is-invalid');
+    }
 
-        function digitsOnly(s) {
-            return (s || '').replace(/\D+/g, '');
+    function clearError(inputEl) {
+        const container = inputEl?.closest('.mb-3') || inputEl?.parentElement || inputEl;
+        const err = container?.querySelector('.client-error');
+        if (err) err.textContent = '';
+        inputEl?.classList?.remove('is-invalid');
+    }
+
+    function clearAllErrors() {
+        form.querySelectorAll('.client-error').forEach(el => el.textContent = '');
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    }
+
+    if (phoneEl) {
+        phoneEl.addEventListener('input', () => {
+            const needLen = countryEl?.value === 'India' ? 10 : 9;
+            let val = digitsOnly(phoneEl.value).slice(0, needLen);
+            phoneEl.value = val;
+            clearError(phoneEl);
+        });
+    }
+
+    if (vIdEl) {
+        vIdEl.addEventListener('input', () => {
+            vIdEl.value = digitsOnly(vIdEl.value); // your formatting script can re-add spaces/dashes
+            clearError(vIdEl);
+        });
+    }
+
+    // Re-validate constraints when country or type changes
+    countryEl?.addEventListener('change', () => {
+        clearError(countryEl);
+        if (phoneEl) {
+            const needLen = countryEl.value === 'India' ? 10 : 9;
+            phoneEl.value = digitsOnly(phoneEl.value).slice(0, needLen);
+            clearError(phoneEl);
+        }
+        // You already auto-select verification type based on country elsewhere
+    });
+
+    vTypeEls.forEach(r => r.addEventListener('change', () => {
+        clearError(r);
+        if (vIdEl) clearError(vIdEl);
+    }));
+
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', function(e) {
+        clearAllErrors();
+        let firstInvalid = null;
+
+        // Email
+        if (!emailEl || !emailEl.value.trim()) {
+            showError(emailEl, 'Email is required.');
+            firstInvalid = firstInvalid || emailEl;
+        } else if (!isEmail(emailEl.value)) {
+            showError(emailEl, 'Enter a valid email address.');
+            firstInvalid = firstInvalid || emailEl;
         }
 
-        function validateForm() {
-            //ajaxErrorDiv.classList.add('d-none');
-            ajaxErrorDiv.style.display = 'none';
-            ajaxErrorDiv.innerHTML = '';
-            ajaxSuccessDiv.classList.add('d-none');
-            ajaxSuccessDiv.innerHTML = '';
-            document.getElementById('phoneError').innerText = '';
-            document.getElementById('vidError').innerText = '';
-            document.getElementById('idFrontError').innerText = '';
-            document.getElementById('idBackError').innerText = '';
+        // OTP
+        const otp = digitsOnly(otpEl?.value);
+        if (!otp || otp.length !== 6) {
+            showError(otpEl, 'Enter the 6-digit OTP.');
+            firstInvalid = firstInvalid || otpEl;
+        }
+        // Make sure OTP was verified via AJAX
+        if (!otpVerifiedEl || otpVerifiedEl.value !== '1') {
+            showError(otpEl, 'Please verify the OTP before submitting.');
+            firstInvalid = firstInvalid || otpEl;
+        }
 
-            let errors = [];
+        // Name
+        if (!nameEl || !nameEl.value.trim()) {
+            showError(nameEl, 'Full name is required.');
+            firstInvalid = firstInvalid || nameEl;
+        }
 
-            const name = form.querySelector('input[name="name"]').value.trim();
-            const country = document.getElementById('countrySelect').value;
-            const phone = digitsOnly(document.getElementById('phoneInput').value);
-            const vType = form.querySelector('input[name="verification_type"]:checked')?.value;
-            const vId = digitsOnly(document.getElementById('verification_id_number').value);
-            const front = form.querySelector('input[name="id_card_front"]').files[0];
-            const back = form.querySelector('input[name="id_card_back"]').files[0];
+        // Country
+        if (!countryEl || !countryEl.value) {
+            showError(countryEl, 'Please select your country.');
+            firstInvalid = firstInvalid || countryEl;
+        }
 
+        // Phone (digits only, len by country)
+        if (phoneEl) {
+            const phoneDigits = digitsOnly(phoneEl.value);
+            const needLen = (countryEl?.value === 'India') ? 10 : 9;
+            if (!phoneDigits) {
+                showError(phoneEl, `Phone is required (${needLen} digits).`);
+                firstInvalid = firstInvalid || phoneEl;
+            } else if (phoneDigits.length !== needLen) {
+                showError(phoneEl, `Phone must be exactly ${needLen} digits.`);
+                firstInvalid = firstInvalid || phoneEl;
+            }
+        }
 
-            if (!name) errors.push("Name required.");
-            if (!country) errors.push("Select country.");
-            if (!phone || (country === 'India' && phone.length !== 10) || (country === 'UAE' && phone.length !== 9)) {
-                errors.push("Phone number invalid.");
-                document.getElementById('phoneError').innerText = (country === 'India') ? "Must be 10 digits." : "Must be 9 digits.";
-            }
-            if (!vType) errors.push("Select verification type.");
-            if (vType === 'aadhaar' && vId.length !== 12) {
-                document.getElementById('vidError').innerText = "Aadhaar must be 12 digits.";
-                errors.push("Aadhaar must be 12 digits.");
-            }
-            if (vType === 'emirates_id' && vId.length !== 15) {
-                document.getElementById('vidError').innerText = "Emirates ID must be 15 digits.";
-                errors.push("Emirates ID must be 15 digits.");
-            }
-            if (!front) {
-                document.getElementById('idFrontError').innerText = "Front ID required.";
-                errors.push("Front ID required.");
-            }
-            if (!back) {
-                document.getElementById('idBackError').innerText = "Back ID required.";
-                errors.push("Back ID required.");
-            }
+        // Verification type
+        const vType = getCheckedValue(vTypeEls);
+        if (!vType) {
+            showError(vTypeEls[0], 'Please choose a verification type.');
+            firstInvalid = firstInvalid || vTypeEls[0];
+        }
 
-            if (errors.length) {
-                ajaxErrorDiv.innerHTML = errors.join("<br>");
-                ajaxErrorDiv.style.display = 'block';
-                //ajaxErrorDiv.classList.remove('d-none');
+        // Verification ID number
+        if (vIdEl) {
+            const idDigits = digitsOnly(vIdEl.value);
+            if (!idDigits) {
+                showError(vIdEl, 'Verification ID number is required.');
+                firstInvalid = firstInvalid || vIdEl;
+            } else {
+                if (vType === 'aadhaar' && idDigits.length !== 12) {
+                    showError(vIdEl, 'Aadhaar must be exactly 12 digits.');
+                    firstInvalid = firstInvalid || vIdEl;
+                }
+                if (vType === 'emirates_id' && idDigits.length !== 15) {
+                    showError(vIdEl, 'Emirates ID must be exactly 15 digits.');
+                    firstInvalid = firstInvalid || vIdEl;
+                }
+            }
+        }
+
+        // Files
+        function validateImage(inputEl, label) {
+            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
+                showError(inputEl, `${label} is required.`);
+                return false;
+            }
+            const f = inputEl.files[0];
+            if (!/^image\//.test(f.type)) {
+                showError(inputEl, `${label} must be an image file.`);
+                return false;
+            }
+            if (f.size > MAX_IMG_BYTES) {
+                showError(inputEl, `${label} must be ≤ ${MAX_IMG_MB} MB.`);
                 return false;
             }
             return true;
         }
+        if (!validateImage(frontEl, 'ID Card (Front)')) firstInvalid = firstInvalid || frontEl;
+        if (!validateImage(backEl, 'ID Card (Back)')) firstInvalid = firstInvalid || backEl;
 
-        form.addEventListener('submit', function(e) {
+        // Stop submit if any invalid
+        if (firstInvalid) {
             e.preventDefault();
-            if (!validateForm()) return;
-
-            const formData = new FormData(form);
-
-            fetch("{{ route('custom_register.ajax_submit', $organization->slug) }}", {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: formData
-                })
-                .then(async res => {
-                    const data = await res.json().catch(() => ({}));
-                    if (!res.ok) {
-                        ajaxErrorDiv.innerHTML = data.message || "Registration failed.";
-                        ajaxErrorDiv.style.display = 'block';
-                        //ajaxErrorDiv.classList.remove('d-none');
-                        return;
-                    }
-                    ajaxSuccessDiv.innerHTML = data.message || "Registration successful!";
-                    ajaxSuccessDiv.classList.remove('d-none');
-                    form.reset();
-                    form.classList.add('d-none');
-                    document.getElementById('afterSubmitBlock').classList.remove('d-none');
-
-                })
-                .catch(err => {
-                    ajaxErrorDiv.innerHTML = "Something went wrong.";
-                    ajaxErrorDiv.style.display = 'block';
-                    //ajaxErrorDiv.classList.remove('d-none');
-                });
-        });
-
+            firstInvalid.focus({
+                preventScroll: false
+            });
+            firstInvalid.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
     });
 </script>
 @endpush
