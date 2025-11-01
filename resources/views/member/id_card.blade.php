@@ -18,12 +18,17 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Member ID Card</h5>
-                    <a href="{{ route('member.id-card.download') }}" class="btn btn-primary">
-                        <i class="mdi mdi-download me-1"></i> Download PDF
-                    </a>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="btnPrintIdCard" class="btn btn-secondary">
+                            <i class="mdi mdi-printer me-1"></i> Print
+                        </button>
+                        {{-- <a href="{{ route('member.id-card.download') }}" class="btn btn-primary">
+                            <i class="mdi mdi-download me-1"></i> Download PDF
+                        </a> --}}
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex flex-wrap gap-4 justify-content-center">
+                    <div id="idcard-print" class="d-flex flex-wrap gap-4 justify-content-center">
                         <!-- Front Side -->
                         <div class="idc idc-front">
                             <div class="idc-top text-center">
@@ -48,7 +53,7 @@
 
                         <!-- Back Side -->
                         <div class="idc idc-back">
-                            <div class="idc-back-top text-center">
+                            <div class="idc-back-top text-right">
                                 <img src="{{ $organization->logo_url }}" alt="Logo" class="idc-logo-small">
                                 <div class="idc-org-name-dark mt-2">{{ strtoupper($organization->name) }}</div>
                             </div>
@@ -116,7 +121,7 @@
     .idc-back { background: #f5f7fa; color:#0d2231; display:grid; grid-template-rows: auto 1fr auto; }
     .idc-back::before { content:''; position:absolute; top:-30px; left:-40px; width:180px; height:160px; background: linear-gradient(135deg,#102A3B,#0C1F2F); border-bottom-right-radius:80px; opacity:.85; }
     .idc-back::after { content:''; position:absolute; bottom:-30px; right:-40px; width:180px; height:160px; background: linear-gradient(135deg,#0C1F2F,#21c1d6); border-top-left-radius:80px; opacity:.9; }
-    .idc-back-top { padding: 22px 18px 6px; position: relative; z-index:1; }
+    .idc-back-top { padding: 22px 18px 6px; position: relative; z-index:1; text-align: right; }
     .idc-logo-small { width: 46px; height: 46px; object-fit: contain; }
     .idc-org-name-dark { font-weight:800; font-size: 13px; letter-spacing:.4px; }
     .idc-back-content { padding: 10px 18px 0; font-size: 12px; z-index:1; align-self: center; }
@@ -125,5 +130,22 @@
     .idc-back-table .val { line-height:1.3; }
     .idc-notes { margin:12px 0 0; padding-left: 18px; font-size: 11px; }
     .idc-back-footer { padding: 10px 18px 16px; font-size: 11px; z-index:1; color:#2e5163; }
+
+    /* Print only the ID cards */
+    @media print {
+        @page { size: A4 portrait; margin: 10mm; }
+        body * { visibility: hidden !important; }
+        #idcard-print, #idcard-print * { visibility: visible !important; }
+        #idcard-print { position: static !important; width: auto !important; margin: 0 !important; display: grid !important; grid-template-columns: 1fr 1fr; gap: 8mm; }
+        .idc { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid; width: 80mm !important; height: 130mm !important; }
+    }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.getElementById('btnPrintIdCard')?.addEventListener('click', function () {
+        window.print();
+    });
+</script>
 @endpush
