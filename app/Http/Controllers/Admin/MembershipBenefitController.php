@@ -3,54 +3,65 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreMembershipBenefitRequest;
-use App\Models\Membership;
 use App\Models\MembershipBenefit;
 use App\Models\Organization;
 use Illuminate\Http\Request;
 
 class MembershipBenefitController extends Controller
 {
-    public function index(Organization $organization, Membership $membership)
+    public function index(Organization $organization)
     {
-        abort_unless($membership->organization_id === $organization->id, 403);
-        $benefits = $membership->benefits()->latest()->get();
-        return view('admin.memberships.benefits.index', compact('organization', 'membership', 'benefits'));
+        $benefits = MembershipBenefit::where('organization_id', $organization->id)->get();
+        return view('admin.memberships.benefits.index', compact('benefits', 'organization'));
     }
 
-    public function create(Organization $organization, Membership $membership)
+    public function create(Organization $organization)
     {
-        abort_unless($membership->organization_id === $organization->id, 403);
-        return view('admin.memberships.benefits.create', compact('organization', 'membership'));
+        return view('admin.memberships.benefits.create', compact('organization'));
     }
 
-    public function store(StoreMembershipBenefitRequest $request, Organization $organization, Membership $membership)
+    public function store(Request $request, Organization $organization)
     {
-        abort_unless($membership->organization_id === $organization->id, 403);
-        $membership->benefits()->create($request->validated());
-        return redirect()->route('orgadmin.memberships.benefits.index', [$organization->slug, $membership->id])
-            ->with('status', 'Benefit added.');
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
+        ]);
+
+        $validated['organization_id'] = $organization->id;
+        MembershipBenefit::create($validated);
+
+        return redirect()->route('orgadmin.membership_benefits.index', $organization->slug)
+            ->with('status', 'Benefit created successfully.');
     }
 
-    public function edit(Organization $organization, MembershipBenefit $benefit)
+    public function edit(Organization $organization, string $benefit)
     {
-        abort_unless($benefit->membership->organization_id === $organization->id, 403);
-        $membership = $benefit->membership;
-        return view('admin.memberships.benefits.edit', compact('organization', 'membership', 'benefit'));
+        $benefitInfo = MembershipBenefit::find($benefit);
+        abort_unless($benefitInfo->organization_id === $organization->id, 403);
+        return view('admin.memberships.benefits.edit', compact('organization', 'benefitInfo'));
     }
 
-    public function update(StoreMembershipBenefitRequest $request, Organization $organization, MembershipBenefit $benefit)
+    public function update(Request $request, Organization $organization, string $benefit)
     {
-        abort_unless($benefit->membership->organization_id === $organization->id, 403);
-        $benefit->update($request->validated());
-        return redirect()->route('orgadmin.memberships.benefits.index', [$organization->slug, $benefit->membership_id])
+
+        $benefitInfo = MembershipBenefit::find($benefit);
+        abort_unless($benefitInfo->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
+        ]);
+
+        $benefitInfo->update($validated);
+        return redirect()->route('orgadmin.membership_benefits.index', $organization->slug)
             ->with('status', 'Benefit updated.');
     }
 
-    public function destroy(Organization $organization, MembershipBenefit $benefit)
+    public function destroy(Organization $organization, string $benefit)
     {
-        abort_unless($benefit->membership->organization_id === $organization->id, 403);
-        $benefit->delete();
+        $benefitInfo = MembershipBenefit::find($benefit);
+        abort_unless($benefitInfo->organization_id === $organization->id, 403);
+        $benefitInfo->delete();
         return back()->with('status', 'Benefit deleted.');
     }
 }

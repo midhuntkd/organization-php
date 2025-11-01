@@ -1,3 +1,18 @@
+<style>
+    .logo-lg {
+        font-size: 24px;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1;
+        text-transform: uppercase;
+        padding-left: 10px;
+        margin-left: 10px;
+    }
+
+    .logo-lg .light-logo {
+        color: #000!important;
+    }
+</style>
 <header class="main-header">
     <div class="d-flex align-items-center logo-box justify-content-start">
         <!-- Logo -->
@@ -7,10 +22,10 @@
                 <span class="light-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
                 <span class="dark-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
             </div>
-            <!-- <div class="logo-lg">
-                <span class="light-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
-                <span class="dark-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
-            </div> -->
+            <div class="logo-lg">
+                <span class="light-logo">AJPS</span>
+                <span class="dark-logo">AJPS</span>
+            </div>
         </a>
     </div>
     <!-- Header Navbar -->

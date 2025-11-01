@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('organization_id')->after('email');
+            $table->unsignedBigInteger('organization_id')->after('email')->nullable();
             $table->string('phone')->nullable()->after('organization_id');
             $table->string('verification_type')->nullable()->after('phone');
             $table->string('verification_id_number')->nullable()->after('verification_type');
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('rejected')->default(false)->after('approved');
             $table->boolean('password_changed')->default(false)->after('rejected');
 
-            $table->foreign('organization_id')->references('id')->on('organizations')->onDelete('cascade');
+            $table->foreign('organization_id')->references('id')->on('organizations')->onDelete('set null');
             $table->unique(['organization_id', 'email']);
         });
     }
@@ -31,8 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        
     }
 };

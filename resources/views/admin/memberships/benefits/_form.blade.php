@@ -26,5 +26,5 @@ $description = old('description', $benefit->description ?? '');
 
 <div class="d-flex gap-2">
     <button class="btn btn-primary" type="submit">{{ $submitText ?? 'Save' }}</button>
-    <a href="{{ route('orgadmin.memberships.benefits.index', [$organization->slug, $membership->id]) }}" class="btn btn-light">Cancel</a>
+    <a href="{{ route('orgadmin.membership_benefits.index', [$organization->slug]) }}" class="btn btn-light">Cancel</a>
 </div>

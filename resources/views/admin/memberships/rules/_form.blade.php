@@ -26,5 +26,5 @@ $description = old('description', $rule->description ?? '');
 
 <div class="d-flex gap-2">
     <button class="btn btn-primary" type="submit">{{ $submitText ?? 'Save' }}</button>
-    <a href="{{ route('orgadmin.memberships.rules.index', [$organization->slug, $membership->id]) }}" class="btn btn-light">Cancel</a>
+    <a href="{{ route('orgadmin.membership_rules.index', [$organization->slug]) }}" class="btn btn-light">Cancel</a>
 </div>

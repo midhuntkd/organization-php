@@ -1,13 +1,13 @@
 @extends('layouts.custom_auth')
 
 @section('content')
-<div class="rounded10 shadow-lg  my-auto  px-10 pb-20 col-10" style="background-color: rgba(63, 66, 84, .65);">
+<div class="rounded10 shadow-lg  my-auto  px-10 pb-20 col-lg-10 col-sm-12 col-xs-12" style="background-color: rgba(63, 66, 84, .65);">
     <div class="content-top-agile p-20 pb-0">
         <h2 class="text-white fw-600">Member Registration</h2>
         <p class="mb-0 text-fade">Create your account for {{ $organization->name }}</p>
     </div>
 
-    <div class="p-40">
+    <div class="p-15">
 
         {{-- Global errors / status --}}
         @if ($errors->any())

@@ -69,6 +69,7 @@ class MemberAccountController extends Controller
             'membership.category',
             'membership.rules'    => fn($q) => $q->orderBy('id'),      // or orderBy('created_at','desc')
             'membership.benefits' => fn($q) => $q->orderBy('id'),
+            'details',
         ]);
 
         // If no membership yet, you might show a message or redirect

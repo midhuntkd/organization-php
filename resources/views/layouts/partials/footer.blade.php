@@ -21,9 +21,13 @@
                             <h5 class="mb-0">{{ Auth::user()->name }}</h5>
                             <p class="my-5 text-fade">{{ Auth::user()->getRoleNames()->implode(', ') }}</p>
                             <a href="mailto:dummy@gmail.com"><span class="icon-Mail-notification me-5 text-success"><span class="path1"></span><span class="path2"></span></span> {{ Auth::user()->email }}</a>
+                            @if(auth()->user()->hasRole('super-admin'))
+                            
+                            @else
                             <a href="{{ route('custom_logout', $organization->slug) }}" class="btn btn-danger btn-sm mt-5">
                                 <span>Logout</span>
-                            </a>
+                            </a>    
+                            @endif
                         </div>
                     </div>
                 </div>

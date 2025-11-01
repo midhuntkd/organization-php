@@ -28,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'verification_type',
         'verification_image',
         'id_card_front',
-        'id_card_back', 
+        'id_card_back',
         'verification_id_number',
         'password',
         'approved',
@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'membership_code',
         'rejected',
         'country_of_residence',
+        'user_image',
     ];
 
     /**
@@ -90,6 +91,15 @@ class User extends Authenticatable implements MustVerifyEmail
             : null;
     }
 
+    public function getUserImageUrlAttribute(): string
+    {
+        if ($this->user_image && file_exists(asset('storage/' . $this->user_image))) {
+            return asset('storage/' . $this->user_image);
+        }
+
+        return asset('hyper/images/user_icon.png');
+    }
+
     public function rejections()
     {
         return $this->hasMany(MemberRejection::class);
@@ -113,7 +123,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $lastCode = static::query()
             ->where('organization_id', $org->id)
             ->whereNotNull('membership_code')
-            ->where('membership_code', 'like', $orgPrefix . '%' . $catPrefix)
+            ->where('membership_code', 'like', $orgPrefix . '-' . $catPrefix . '%')
             ->orderByDesc('id')
             ->value('membership_code');
 
@@ -121,14 +131,31 @@ class User extends Authenticatable implements MustVerifyEmail
         $next = $base;
 
         if ($lastCode) {
-            // Extract the middle number between org and category prefixes
-            $pattern = '/^' . preg_quote($orgPrefix, '/') . '(\d+)' . preg_quote($catPrefix, '/') . '$/';
+            // Match format: ORG-CAT12345
+            $pattern = '/^' . preg_quote($orgPrefix, '/') . '-' . preg_quote($catPrefix, '/') . '(\d+)$/';
 
             if (preg_match($pattern, $lastCode, $m)) {
                 $next = max($base, ((int) $m[1]) + 1);
             }
         }
 
-        return $orgPrefix . $next . $catPrefix;
+        do {
+            $candidate = $orgPrefix . '-' . $catPrefix . $next;
+            $exists = static::query()
+                ->where('organization_id', $org->id)
+                ->where('membership_code', $candidate)
+                ->exists();
+
+            if (!$exists) {
+                return $candidate;
+            }
+
+            $next++;
+        } while (true);
+    }
+
+    public function details()
+    {
+        return $this->hasOne(UserDetail::class);
     }
 }

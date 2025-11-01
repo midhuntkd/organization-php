@@ -58,14 +58,28 @@ class Organization extends Model
     }
 
     // Accessors for full URLs (handles storage disk)
-    public function getLogoUrlAttribute(): ?string
+    public function getLogoUrlAttribute(): string
     {
-        return $this->logo ? asset('storage/' . $this->logo) : null;
+        if ($this->logo) {
+            $path = 'storage/' . $this->logo;
+            $rootPath = Storage::disk('public')->path($this->logo);
+            if (file_exists($rootPath)) {
+                return asset($path);
+            }
+        }
+        return asset('storage/org/l-logo.png');
     }
 
-    public function getBackgroundImageUrlAttribute(): ?string
+    public function getBackgroundImageUrlAttribute(): string
     {
-        return $this->background_image ? Storage::url($this->background_image) : null;
+        if ($this->background_image) {
+            $path = 'storage/' . $this->background_image;
+            $rootPath = Storage::disk('public')->path($this->background_image);
+            if (file_exists($rootPath)) {
+                return asset($path);
+            }
+        }
+        return asset('hyper/images/auth-bg/bg-16.jpg');
     }
 
     // Define the route key name for model binding
@@ -84,5 +98,14 @@ class Organization extends Model
     public function memberships()
     {
         return $this->hasMany(Membership::class);
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($organization) {
+            $organization->users()
+                ->whereHas('roles', fn($q) => $q->where('name', 'organization-admin'))
+                ->delete();
+        });
     }
 }

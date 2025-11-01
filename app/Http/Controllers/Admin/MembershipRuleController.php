@@ -3,54 +3,64 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreMembershipRuleRequest;
-use App\Models\Membership;
 use App\Models\MembershipRule;
 use App\Models\Organization;
 use Illuminate\Http\Request;
 
 class MembershipRuleController extends Controller
 {
-    public function index(Organization $organization, Membership $membership)
+    public function index(Organization $organization)
     {
-        abort_unless($membership->organization_id === $organization->id, 403);
-        $rules = $membership->rules()->latest()->get();
-        return view('admin.memberships.rules.index', compact('organization', 'membership', 'rules'));
+        $rules = MembershipRule::where('organization_id', $organization->id)->get();
+        return view('admin.memberships.rules.index', compact('rules', 'organization'));
     }
 
-    public function create(Organization $organization, Membership $membership)
+    public function create(Organization $organization)
     {
-        abort_unless($membership->organization_id === $organization->id, 403);
-        return view('admin.memberships.rules.create', compact('organization', 'membership'));
+        return view('admin.memberships.rules.create', compact('organization'));
     }
 
-    public function store(StoreMembershipRuleRequest $request, Organization $organization, Membership $membership)
+    public function store(Request $request, Organization $organization)
     {
-        abort_unless($membership->organization_id === $organization->id, 403);
-        $membership->rules()->create($request->validated());
-        return redirect()->route('orgadmin.memberships.rules.index', [$organization->slug, $membership->id])
-            ->with('status', 'Rule added.');
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
+        ]);
+
+        $validated['organization_id'] = $organization->id;
+        MembershipRule::create($validated);
+
+        return redirect()->route('orgadmin.membership_rules.index', $organization->slug)
+            ->with('status', 'Rule created successfully.');
     }
 
-    public function edit(Organization $organization, MembershipRule $rule)
+    public function edit(Organization $organization, string $rule)
     {
-        abort_unless($rule->membership->organization_id === $organization->id, 403);
-        $membership = $rule->membership;
-        return view('admin.memberships.rules.edit', compact('organization', 'membership', 'rule'));
+        $mebershipRule = MembershipRule::find($rule);
+        abort_unless($mebershipRule->organization_id === $organization->id, 403);
+        return view('admin.memberships.rules.edit', compact('organization', 'mebershipRule'));
     }
 
-    public function update(StoreMembershipRuleRequest $request, Organization $organization, MembershipRule $rule)
+    public function update(Request $request, Organization $organization, string $rule)
     {
-        abort_unless($rule->membership->organization_id === $organization->id, 403);
-        $rule->update($request->validated());
-        return redirect()->route('orgadmin.memberships.rules.index', [$organization->slug, $rule->membership_id])
+        $mebershipRule = MembershipRule::find($rule);
+        abort_unless($mebershipRule->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
+        ]);
+
+        $mebershipRule->update($validated);
+        return redirect()->route('orgadmin.membership_rules.index', $organization->slug)
             ->with('status', 'Rule updated.');
     }
 
-    public function destroy(Organization $organization, MembershipRule $rule)
+    public function destroy(Organization $organization, string $rule)
     {
-        abort_unless($rule->membership->organization_id === $organization->id, 403);
-        $rule->delete();
+        $mebershipRule = MembershipRule::find($rule);
+        abort_unless($mebershipRule->organization_id === $organization->id, 403);
+        $mebershipRule->delete();
         return back()->with('status', 'Rule deleted.');
     }
 }

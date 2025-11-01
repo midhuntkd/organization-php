@@ -28,9 +28,9 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
-                                    <th>Country of Residence</th>
-                                    <th>Verification Info</th>
-                                    
+                                    <th>Country</th>
+                                    <th>ID Type</th>
+                                    <th>ID Number</th>
                                     <th>Approved</th>
                                     <th>Action</th>
                                 </tr>
@@ -42,8 +42,8 @@
                                     <td>{{ $member->email }}</td>
                                     <td>{{ $member->phone }}</td>
                                     <td>{{ $member->country_of_residence }}</td>
-                                    <td>{{ $member->verification_type }} <br /> {{ $member->verification_id_number }}</td>
-                                    
+                                    <td>{{ $member->verification_type }} </td>
+                                    <td>{{ $member->verification_id_number }}</td>
                                     <td>@if($member->approved)
                                         <span class="badge bg-success">Approved</span>
                                         @elseif($member->rejected)

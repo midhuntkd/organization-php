@@ -56,6 +56,34 @@
                             <li><a href="{{ route('orgadmin.memberships.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
                         </ul>
                     </li>
+
+                    <li class="treeview">
+                        <a href="#">
+                            <i data-feather="credit-card"></i>
+                            <span>Membership Benefits</span>
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-right pull-right"></i>
+                            </span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li><a href="{{ route('orgadmin.membership_benefits.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
+                            <li><a href="{{ route('orgadmin.membership_benefits.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="treeview">
+                        <a href="#">
+                            <i data-feather="credit-card"></i>
+                            <span>Membership Rules</span>
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-right pull-right"></i>
+                            </span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li><a href="{{ route('orgadmin.membership_rules.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
+                            <li><a href="{{ route('orgadmin.membership_rules.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
+                        </ul>
+                    </li>
                     @endrole
                     @role('member')
                     <li>
@@ -67,18 +95,71 @@
                             </span> -->
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('member.profile.edit', $organization->slug) }}">
+                            <i data-feather="user"></i>
+                            <span>Update Profile</span>
+                            <!-- <span class="pull-right-container">
+                                <i class="fa fa-angle-right pull-right"></i>
+                            </span> -->
+                        </a>
+                    </li>
                     @endrole
+                    @hasrole('super-admin')
+                    {{-- <li class="treeview {{ request()->is('super-admin/organizations*') ? 'menu-open active' : '' }}">
+                        <a href="#">
+                            <i class="mdi mdi-office-building"></i> 
+                            <span>Organizations</span>
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-right pull-right"></i>
+                            </span>
+                        </a>
+                        <ul class="treeview-menu" style="{{ request()->is('super-admin/organizations*') ? 'display:block;' : '' }}">
+                            <li class="{{ request()->routeIs('superadmin.organizations.index') ? 'active' : '' }}">
+                                <a href="{{ route('superadmin.organizations.index') }}">
+                                    <i class="ti-list"></i> All Organizations
+                                </a>
+                            </li>
+                            <li class="{{ request()->routeIs('superadmin.organizations.create') ? 'active' : '' }}">
+                                <a href="{{ route('superadmin.organizations.create') }}">
+                                    <i class="ti-plus"></i> Add Organization
+                                </a>
+                            </li>
+                        </ul>
+                    </li> --}}
+
+
+                    <li class="treeview {{ request()->is('super-admin/organizations*') ? 'menu-open active' : '' }}">
+                        <a href="#">
+                            <i data-feather="credit-card"></i>
+                            <span>Organizations</span>
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-right pull-right"></i>
+                            </span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li class="{{ request()->routeIs('superadmin.organizations.index') ? 'active' : '' }}"><a href="{{ route('superadmin.organizations.index') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
+                            <li class="{{ request()->routeIs('superadmin.organizations.create') ? 'active' : '' }}"><a href="{{ route('superadmin.organizations.create') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
+                        </ul>
+                    </li>
+                    @endhasrole
                 </ul>
 
                 <div class="sidebar-widgets">
                     <div class="mx-25 mb-30 pb-5 bg-primary-light rounded-5">
                         <div class="text-center">
-                            <img src="{{ asset('hyper/images/gadget_people_800x600.gif') }}" class="sideimg p-5 rounded-5" alt="">
+                            
                             @role('organization-admin')
+                            <img src="{{ $organization->logo_url }}" class="sideimg p-5 rounded-5" alt="">
                             <h4 class="title-bx text-black m-0">Admin</h4>
                             @endrole
                             @role('member')
+                            <img src="{{ $organization->logo_url }}" class="sideimg p-5 rounded-5" alt="">
                             <h4 class="title-bx text-black m-0">Member</h4>
+                            @endrole
+                            @role('super-admin')
+                            <img src="{{ asset('hyper/images/gadget_people_800x600.gif') }}" class="sideimg p-5 rounded-5" alt="">
+                            <h4 class="title-bx text-black m-0">Super Admin</h4>
                             @endrole
                         </div>
                     </div>

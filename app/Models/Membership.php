@@ -30,12 +30,12 @@ class Membership extends Model
 
     public function rules()
     {
-        return $this->hasMany(MembershipRule::class);
+        return $this->belongsToMany(MembershipRule::class, 'membership_rule_membership');
     }
 
     public function benefits()
     {
-        return $this->hasMany(MembershipBenefit::class);
+        return $this->belongsToMany(MembershipBenefit::class, 'membership_benefit_membership');
     }
 
     public function scopeActive($q)

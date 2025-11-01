@@ -10,10 +10,14 @@ use App\Http\Controllers\Auth\CustomRegisterController;
 use App\Http\Controllers\Auth\CustomVerifyEmailController;
 use App\Http\Controllers\Member\MemberAccountController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SuperAdmin\OrganizationController;
 use App\Models\Membership;
 use App\Models\MembershipBenefits;
 use App\Models\MembershipCategory;
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\SuperAdmin\LoginController as SuperAdminLoginController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -43,6 +47,11 @@ Route::get('/account/{organization:slug}/logout', [CustomLoginController::class,
 Route::get('/email/verify/{id}/{hash}', CustomVerifyEmailController::class)
     ->middleware(['signed', 'throttle:6,1'])   // no 'auth' here
     ->name('custom.verification.verify');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/member/id-card', [App\Http\Controllers\Member\ProfileController::class, 'showIdCard'])->name('member.id-card');
+    Route::get('/member/id-card/download', [App\Http\Controllers\Member\ProfileController::class, 'downloadIdCard'])->name('member.id-card.download');
+});
 
 Route::post('/auth/precheck/{organization:slug?}', [CustomLoginController::class, 'check'])
     ->middleware('throttle:10,1') // prevent abuse
@@ -83,11 +92,15 @@ Route::middleware(['auth', 'role:organization-admin'])
                 Route::resource('memberships', MembershipController::class);
 
                 // Nested resources for rules & benefits
-                Route::resource('memberships.rules', MembershipRuleController::class)
-                    ->shallow()->except(['show']); 
-                Route::resource('memberships.benefits', MembershipBenefitController::class)
-                    ->shallow()->except(['show']);    
-                    });
+                Route::resource('membership-rules', MembershipRuleController::class)
+                ->except(['show'])
+                ->names('membership_rules');
+
+                Route::resource('membership-benefits', MembershipBenefitController::class)
+                    ->except(['show'])
+                    ->names('membership_benefits');
+    
+            });
     });
 
 
@@ -114,6 +127,10 @@ Route::middleware(['auth', 'role:member'])
                         
                 });     
 
+                Route::get('/profile', [\App\Http\Controllers\Member\ProfileController::class, 'edit'])->name('profile.edit');
+                Route::post('/profile', [\App\Http\Controllers\Member\ProfileController::class, 'update'])->name('profile.update');
+
+
             });
     });
 
@@ -138,5 +155,30 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
+
+Route::prefix('super-admin')->name('superadmin.')->group(function () {
+    Route::get('/login', [SuperAdminLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [SuperAdminLoginController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [SuperAdminLoginController::class, 'logout'])->name('logout');
+
+    Route::middleware(['auth', 'role:super-admin'])->group(function () {
+        Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    Route::post('/auth/precheck', [SuperAdminLoginController::class, 'check'])
+    ->middleware('throttle:10,1') // prevent abuse
+    ->name('auth.precheck');
+});
+
+Route::middleware(['auth', 'role:super-admin'])
+    ->prefix('super-admin')
+    ->name('superadmin.')
+    ->group(function () {
+        Route::resource('organizations', OrganizationController::class);
+        Route::post('organizations/{organization}/resend-invite', [OrganizationController::class, 'resendInvite'])
+            ->name('organizations.resendInvite');
+    });
 
 require __DIR__.'/auth.php';

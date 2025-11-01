@@ -3,13 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class MembershipRule extends Model
 {
-    protected $fillable = ['membership_id', 'title', 'description'];
+    use HasFactory;
 
-    public function membership()
+    protected $fillable = ['organization_id', 'title', 'description'];
+
+    public function organization()
     {
-        return $this->belongsTo(Membership::class);
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function memberships()
+    {
+        return $this->belongsToMany(Membership::class, 'membership_rule_membership');
     }
 }

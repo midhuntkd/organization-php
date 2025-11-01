@@ -8,8 +8,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
+
 
 class CustomLoginController extends Controller
 {
@@ -168,7 +170,6 @@ class CustomLoginController extends Controller
             }
             $query->where('organization_id', $organization->id);
         }
-
         $user = $query->first();
 
         if (! $user) {

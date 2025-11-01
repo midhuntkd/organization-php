@@ -5,8 +5,7 @@
 @section('breadcrumb')
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ route('orgadmin.dashboard', $organization->slug) }}"><i class="mdi mdi-home-outline"></i></a></li>
-    <li class="breadcrumb-item"><a href="{{ route('orgadmin.memberships.index', $organization->slug) }}">Memberships</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('orgadmin.memberships.rules.index', [$organization->slug, $membership->id]) }}">Rules</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('orgadmin.membership_rules.index', $organization->slug) }}">Rules</a></li>
     <li class="breadcrumb-item active">Edit</li>
 </ol>
 @endsection
@@ -17,12 +16,12 @@
         <div class="col-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h4 class="box-title">Edit Rule — {{ $membership->name }}</h4>
+                    <h4 class="box-title">Edit Rule </h4>
                 </div>
                 <div class="box-body">
-                    <form method="POST" action="{{ route('orgadmin.rules.update', [$organization->slug, $rule->id]) }}">
+                     <form action="{{ route('orgadmin.membership_rules.update', [$organization->slug, $mebershipRule->id]) }}" method="POST">
                         @csrf @method('PUT')
-                        @include('admin.memberships.rules._form', ['submitText' => 'Update', 'rule' => $rule])
+                        @include('admin.memberships.rules._form', ['submitText' => 'Update', 'rule' => $mebershipRule])
                     </form>
                 </div>
             </div>

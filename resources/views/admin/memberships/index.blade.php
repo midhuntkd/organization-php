@@ -81,18 +81,6 @@
                                             <i class="mdi mdi-pencil"></i>
                                         </a>
 
-                                        {{-- Manage Rules --}}
-                                        <a href="{{ route('orgadmin.memberships.rules.index', [$organization->slug, $m->id]) }}"
-                                            class="btn btn-sm btn-info">
-                                            Rules
-                                        </a>
-
-                                        {{-- Manage Benefits --}}
-                                        <a href="{{ route('orgadmin.memberships.benefits.index', [$organization->slug, $m->id]) }}"
-                                            class="btn btn-sm btn-success">
-                                            Benefits
-                                        </a>
-
                                         {{-- Delete --}}
                                         <form action="{{ route('orgadmin.memberships.destroy', [$organization->slug, $m->id]) }}"
                                             method="POST" onsubmit="return confirm('Delete this membership?');">
