@@ -31,21 +31,7 @@
     <input type="hidden" name="membership_category_id" value="2">
 
     {{-- REMOVED: Membership category --}}
-    <!-- <div class="col-md-6 mb-3">
-        <label class="form-label" for="membership_category_id">Category <span class="text-danger">*</span></label>
-        <select id="membership_category_id" name="membership_category_id"
-            class="form-select @error('membership_category_id') is-invalid @enderror" required>
-            <option value="">-- Select Active Category --</option>
-            @foreach ($categories as $cat)
-<option value="{{ $cat->id }}" @selected($categoryId == $cat->id)>
-                {{ $cat->prefix }} — {{ $cat->name }}
-            </option>
-@endforeach
-        </select>
-        @error('membership_category_id')
-    <div class="invalid-feedback d-block">{{ $message }}</div>
-@enderror
-    </div> -->
+    
 
     {{-- NEW: Membership prefix (defaults to organization prefix) --}}
     <div class="col-md-6 mb-3">
@@ -172,3 +158,6 @@
     <button type="submit" class="btn btn-primary">{{ $submitText ?? 'Save' }}</button>
     <a href="{{ route('orgadmin.memberships.index', $organization->slug) }}" class="btn btn-light">Cancel</a>
 </div>
+<style>
+    .text-muted{color: rgb(151 151 151 / 75%) !important;}
+</style>

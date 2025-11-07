@@ -66,7 +66,6 @@ class MemberAccountController extends Controller
 
         // eager-load membership with category, rules, benefits
         $user->load([
-            'membership.category',
             'membership.rules'    => fn($q) => $q->orderBy('id'),      // or orderBy('created_at','desc')
             'membership.benefits' => fn($q) => $q->orderBy('id'),
             'details',
@@ -74,7 +73,7 @@ class MemberAccountController extends Controller
 
         // If no membership yet, you might show a message or redirect
         $membership = $user->membership;
-        $category   = $membership?->category;
+        //$category   = $membership?->category;
         $rules      = $membership?->rules ?? collect();
         $benefits   = $membership?->benefits ?? collect();
 
@@ -82,7 +81,7 @@ class MemberAccountController extends Controller
             'organization',
             'user',
             'membership',
-            'category',
+            //'category',
             'rules',
             'benefits'
         ));

@@ -8,7 +8,6 @@ class Membership extends Model
 {
     protected $fillable = [
         'organization_id',
-        'membership_category_id',
         'name',
         'prefix',
         'unique_id',
@@ -21,11 +20,6 @@ class Membership extends Model
     public function organization()
     {
         return $this->belongsTo(Organization::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(MembershipCategory::class, 'membership_category_id');
     }
 
     public function rules()

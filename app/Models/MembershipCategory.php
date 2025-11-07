@@ -20,11 +20,6 @@ class MembershipCategory extends Model
         return $this->belongsTo(Organization::class);
     }
 
-    public function memberships()
-    {
-        return $this->hasMany(Membership::class);
-    }
-
     public function scopeActive($q)
     {
         return $q->where('status', 'active');

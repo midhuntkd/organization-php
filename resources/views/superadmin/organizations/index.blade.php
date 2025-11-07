@@ -45,7 +45,7 @@
                                         <th>#</th>
                                         <th>Name</th>
                                         <th>Prefix</th>
-                                        <th>Slug</th>
+                                        {{-- <th>Slug</th> --}}
                                         <th>Logo</th>
                                         <th>Admin</th>
                                         <th width="220">Actions</th>
@@ -63,7 +63,7 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $org->name }}</td>
                                             <td>{{ $org->org_prefix }}</td>
-                                            <td>{{ $org->slug }}</td>
+                                            {{-- <td>{{ $org->slug }}</td> --}}
                                             <td>
                                                 @if ($org->logo_url)
                                                     <img src="{{ $org->logo_url }}" width="60">

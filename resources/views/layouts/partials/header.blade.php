@@ -19,8 +19,17 @@
         <a href="#" class="logo">
             <!-- logo-->
             <div class="logo-mini w-40">
-                <span class="light-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
-                <span class="dark-logo"><img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo"></span>
+                <span class="light-logo">
+                    @role('organization-admin')
+                    <img src="{{ $organization->logo_url }}"  alt="">
+                    @endrole
+                    @role('member')
+                    <img src="{{ $organization->logo_url }}"  alt="">
+                    @endrole
+                </span>
+                <span class="dark-logo">
+                    <img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo">
+                </span>
             </div>
             <div class="logo-lg">
                 <span class="light-logo">AJPS</span>

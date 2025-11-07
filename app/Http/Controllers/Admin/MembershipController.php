@@ -15,8 +15,7 @@ class MembershipController extends Controller
 {
     public function index(Organization $organization)
     {
-        $memberships = Membership::with('category')
-            ->where('organization_id', $organization->id)
+        $memberships = Membership::where('organization_id', $organization->id)
             ->paginate(20);
         return view('admin.memberships.index', compact('organization', 'memberships'));
     }
@@ -26,9 +25,9 @@ class MembershipController extends Controller
         // Only ACTIVE categories for select
         $rules = MembershipRule::where('organization_id', $organization->id)->get();
         $benefits = MembershipBenefit::where('organization_id', $organization->id)->get();
-        $categories = MembershipCategory::where('organization_id', $organization->id)
-            ->active()->orderBy('name')->get();
-        return view('admin.memberships.create', compact('organization', 'categories', 'rules', 'benefits'));
+        // $categories = MembershipCategory::where('organization_id', $organization->id)
+        //     ->active()->orderBy('name')->get();
+        return view('admin.memberships.create', compact('organization',  'rules', 'benefits'));
     }
 
     public function store(StoreMembershipRequest $request, Organization $organization)

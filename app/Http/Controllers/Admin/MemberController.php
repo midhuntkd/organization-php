@@ -42,8 +42,7 @@ class MemberController extends Controller
         $plain = mt_rand(1000, 9999);
 
         // 1) Get default membership for this org
-        $membership = Membership::with('category')
-            ->where('organization_id', $organization->id)
+        $membership = Membership::where('organization_id', $organization->id)
             ->where('is_default', true)
             ->where('status', 'active')
             ->first();
