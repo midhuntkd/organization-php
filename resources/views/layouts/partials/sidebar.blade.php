@@ -1,3 +1,10 @@
+<style>
+    .theme-primary .bg-primary-light {
+        background-color: #7f8289 !important;
+        color: #0052cc;
+    }
+</style>
+
 <aside class="main-sidebar">
     <!-- sidebar-->
     <section class="sidebar position-relative">

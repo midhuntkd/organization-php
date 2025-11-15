@@ -23,7 +23,7 @@
 </style>
 @php
     $currentUser = auth()->user();
-    $defaultAvatar = asset('hyper/images/avatar/avatar-13.png');
+    $defaultAvatar = asset('hyper/images/user_icon.png');
     $userAvatar = $currentUser && !empty($currentUser->user_image)
         ? $currentUser->user_image_url
         : $defaultAvatar;

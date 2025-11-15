@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\Membership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -54,6 +55,16 @@ class OrganizationController extends Controller
 
         $organization = Organization::create($orgData);
 
+        Membership::create([
+            'organization_id' => $organization->id,
+            'name' => 'Volunteer',
+            'prefix' => 'VOL',
+            'joining_fee' => 0,
+            'monthly_fee' => 0,
+            'status' => 'active',
+            'is_default' => true,
+        ]);
+
         // Create admin user
         $tempPassword = 'Admin@' . random_int(1000, 9999);
         $adminUser = User::create([
@@ -75,9 +86,13 @@ class OrganizationController extends Controller
         
 
         // Send email
-        Mail::to($adminUser->email)->send(new AdminInviteMail($organization, $adminUser, $tempPassword));
+        $emailSent = $this->sendAdminInvite($organization, $adminUser, $tempPassword);
 
-        return redirect()->route('superadmin.organizations.index')->with('status', 'Organization created and admin invited successfully.');
+        $statusMessage = $emailSent
+            ? 'Organization created and admin invited successfully.'
+            : 'Organization created, but the invite email could not be sent. Please notify the admin manually.';
+
+        return redirect()->route('superadmin.organizations.index')->with('status', $statusMessage);
     }
 
     public function show(Organization $organization)
@@ -136,9 +151,12 @@ class OrganizationController extends Controller
         $tempPassword = 'Admin@' . random_int(1000, 9999);
         $adminUser->update(['password' => Hash::make($tempPassword)]);
 
-        Mail::to($adminUser->email)->send(new AdminInviteMail($organization, $adminUser, $tempPassword));
+        $emailSent = $this->sendAdminInvite($organization, $adminUser, $tempPassword);
+        $message = $emailSent
+            ? 'Invite re-sent successfully to ' . $adminUser->email
+            : 'Admin password reset but the email could not be delivered. Please notify the admin manually.';
 
-        return back()->with('status', 'Invite re-sent successfully to ' . $adminUser->email);
+        return back()->with('status', $message);
     }
 
     public function resetAdminPassword(Organization $organization)
@@ -154,8 +172,22 @@ class OrganizationController extends Controller
         $tempPassword = 'Admin@' . random_int(1000, 9999);
         $adminUser->update(['password' => Hash::make($tempPassword)]);
 
-        Mail::to($adminUser->email)->send(new AdminInviteMail($organization, $adminUser, $tempPassword));
+        $emailSent = $this->sendAdminInvite($organization, $adminUser, $tempPassword);
+        $message = $emailSent
+            ? 'Admin password reset and emailed to ' . $adminUser->email
+            : 'Admin password reset but the email could not be delivered. Please notify the admin manually.';
 
-        return back()->with('status', 'Admin password reset and emailed to ' . $adminUser->email);
+        return back()->with('status', $message);
+    }
+
+    protected function sendAdminInvite(Organization $organization, User $adminUser, string $tempPassword): bool
+    {
+        try {
+            Mail::to($adminUser->email)->send(new AdminInviteMail($organization, $adminUser, $tempPassword));
+            return true;
+        } catch (\Throwable $e) {
+            report($e);
+            return false;
+        }
     }
 }

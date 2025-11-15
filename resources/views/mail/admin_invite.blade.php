@@ -7,7 +7,7 @@ You have been invited as an **Organization Admin**.
 
 @component('mail::panel')
 **Login Email:** {{ $user->email }}  
-**Temporary Password:** {{ $password }}
+**Key:** {{ $password }}
 @endcomponent
 
 @component('mail::button', ['url' => route('member_login', $organization->slug)])
