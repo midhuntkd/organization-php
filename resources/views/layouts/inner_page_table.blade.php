@@ -20,7 +20,12 @@
     @stack('styles')
 </head>
 
-<body class="hold-transition light-skin sidebar-mini theme-primary dark-skin fixed">
+@php
+    $userViewMode = auth()->user()->view_mode ?? 'dark';
+    $skinClass = $userViewMode === 'light' ? 'light-skin' : 'dark-skin';
+@endphp
+
+<body class="hold-transition sidebar-mini theme-primary fixed {{ $skinClass }}">
 
     <div class="wrapper">
         <div id="loader"></div>

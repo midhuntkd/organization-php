@@ -1,4 +1,0 @@
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/member/id-card', [App\Http\Controllers\Member\ProfileController::class, 'showIdCard'])->name('member.id-card');
-    Route::get('/member/id-card/download', [App\Http\Controllers\Member\ProfileController::class, 'downloadIdCard'])->name('member.id-card.download');
-});

@@ -75,6 +75,14 @@
                                                     class="btn btn-info btn-sm"><i class="mdi mdi-eye"></i></a>
                                                 <a href="{{ route('superadmin.organizations.edit', $org) }}"
                                                     class="btn btn-warning btn-sm"><i class="mdi mdi-pencil"></i></a>
+                                                <form action="{{ route('superadmin.organizations.resetPassword', $org) }}"
+                                                    method="POST" style="display:inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                                        onclick="return confirm('Reset admin password and email the new credentials?')">
+                                                        <i class="mdi mdi-refresh"></i> Reset Password
+                                                    </button>
+                                                </form>
                                                 <form action="{{ route('superadmin.organizations.destroy', $org) }}"
                                                     method="POST" style="display:inline">
                                                     @csrf @method('DELETE')

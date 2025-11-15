@@ -140,4 +140,22 @@ class OrganizationController extends Controller
 
         return back()->with('status', 'Invite re-sent successfully to ' . $adminUser->email);
     }
+
+    public function resetAdminPassword(Organization $organization)
+    {
+        $adminUser = User::where('organization_id', $organization->id)
+            ->whereHas('roles', fn($q) => $q->where('name', 'organization-admin'))
+            ->first();
+
+        if (!$adminUser) {
+            return back()->with('status', 'No organization admin found to reset password.');
+        }
+
+        $tempPassword = 'Admin@' . random_int(1000, 9999);
+        $adminUser->update(['password' => Hash::make($tempPassword)]);
+
+        Mail::to($adminUser->email)->send(new AdminInviteMail($organization, $adminUser, $tempPassword));
+
+        return back()->with('status', 'Admin password reset and emailed to ' . $adminUser->email);
+    }
 }

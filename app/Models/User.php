@@ -39,6 +39,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'rejected',
         'country_of_residence',
         'user_image',
+        'view_mode',
     ];
 
     /**
@@ -65,6 +66,10 @@ class User extends Authenticatable implements MustVerifyEmail
             'password_changed' => 'boolean',
         ];
     }
+
+    protected $attributes = [
+        'view_mode' => 'dark',
+    ];
 
     public function organization()
     {

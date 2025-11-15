@@ -20,6 +20,7 @@ use App\Http\Controllers\SuperAdmin\LoginController as SuperAdminLoginController
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\Auth\OrgPasswordResetLinkController;
 use App\Http\Controllers\Auth\OrgNewPasswordController;
+use App\Http\Controllers\UserViewModeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -153,6 +154,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/user/view-mode', UserViewModeController::class)->name('user.view-mode');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -181,6 +184,8 @@ Route::middleware(['auth', 'role:super-admin'])
         Route::resource('organizations', OrganizationController::class);
         Route::post('organizations/{organization}/resend-invite', [OrganizationController::class, 'resendInvite'])
             ->name('organizations.resendInvite');
+        Route::post('organizations/{organization}/reset-password', [OrganizationController::class, 'resetAdminPassword'])
+            ->name('organizations.resetPassword');
     });
 
 require __DIR__.'/auth.php';

@@ -23,10 +23,11 @@
 </style>
 @php
     $currentUser = auth()->user();
-    $defaultAvatar = asset('hyper/images/user_icon.png');
+    $defaultAvatar = asset('hyper/images/avatar/avatar-13.png');
     $userAvatar = $currentUser && !empty($currentUser->user_image)
         ? $currentUser->user_image_url
         : $defaultAvatar;
+    $prefersLightMode = $currentUser && $currentUser->view_mode === 'light';
 @endphp
 <header class="main-header">
     <div class="d-flex align-items-center logo-box justify-content-start">
@@ -99,7 +100,7 @@
                 <li class="dropdown notifications-menu btn-group">
                     <label class="switch">
                         <a class="waves-effect waves-light btn-primary-light svg-bt-icon">
-                            <input type="checkbox" data-mainsidebarskin="toggle" id="toggle_left_sidebar_skin">
+                            <input type="checkbox" data-mainsidebarskin="toggle" id="toggle_left_sidebar_skin" {{ $prefersLightMode ? 'checked' : '' }}>
                             <span class="switch-on"><i data-feather="moon"></i></span>
                             <span class="switch-off"><i data-feather="sun"></i></span>
                         </a>
@@ -133,3 +134,32 @@
         </div>
     </nav>
 </header>
+
+@auth
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const toggle = document.getElementById('toggle_left_sidebar_skin');
+                if (!toggle) {
+                    return;
+                }
+
+                toggle.addEventListener('change', function () {
+                    const mode = this.checked ? 'light' : 'dark';
+
+                    fetch("{{ route('user.view-mode') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({ view_mode: mode })
+                    }).catch(function (error) {
+                        console.error('Unable to update view mode preference', error);
+                    });
+                });
+            });
+        </script>
+    @endpush
+@endauth
