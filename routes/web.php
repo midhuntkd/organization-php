@@ -21,6 +21,7 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\Auth\OrgPasswordResetLinkController;
 use App\Http\Controllers\Auth\OrgNewPasswordController;
 use App\Http\Controllers\UserViewModeController;
+use App\Http\Controllers\AccountPasswordController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -155,6 +156,8 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/user/view-mode', UserViewModeController::class)->name('user.view-mode');
+    Route::get('/account/password', [AccountPasswordController::class, 'edit'])->name('account.password.change');
+    Route::post('/account/password', [AccountPasswordController::class, 'update'])->name('account.password.update');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

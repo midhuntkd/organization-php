@@ -150,6 +150,13 @@
                         </ul> --}}
                     </li>
                     @endhasrole
+
+                    <li>
+                        <a href="{{ route('account.password.change') }}">
+                            <i data-feather="lock"></i>
+                            <span>Change Password</span>
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="sidebar-widgets">
