@@ -67,7 +67,13 @@
                         </div>
                     </div>
                     <!-- /.col -->
-                    @if (Route::has('password.request'))
+                    @if (isset($organization) && Route::has('org.password.request'))
+                    <div class="col-6">
+                        <div class="fog-pwd text-end">
+                            <a href="{{ route('org.password.request', $organization->slug) }}" class="text-white fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot Password?</a><br>
+                        </div>
+                    </div>
+                    @elseif (Route::has('password.request'))
                     <div class="col-6">
                         <div class="fog-pwd text-end">
                             <a href="{{ route('password.request') }}" class="text-white fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot Password?</a><br>

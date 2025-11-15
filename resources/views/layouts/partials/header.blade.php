@@ -12,28 +12,58 @@
     .logo-lg .light-logo {
         color: #000!important;
     }
+
+    .logo-mini img {
+        width: 50px;
+        height: 50px;
+        max-width: 50px;
+        max-height: 50px;
+        object-fit: cover;
+    }
 </style>
+@php
+    $currentUser = auth()->user();
+    $defaultAvatar = asset('hyper/images/user_icon.png');
+    $userAvatar = $currentUser && !empty($currentUser->user_image)
+        ? $currentUser->user_image_url
+        : $defaultAvatar;
+@endphp
 <header class="main-header">
     <div class="d-flex align-items-center logo-box justify-content-start">
         <!-- Logo -->
         <a href="#" class="logo">
             <!-- logo-->
             <div class="logo-mini w-40">
-                <span class="light-logo">
-                    @role('organization-admin')
-                    <img src="{{ $organization->logo_url }}"  alt="">
-                    @endrole
-                    @role('member')
-                    <img src="{{ $organization->logo_url }}"  alt="">
-                    @endrole
-                </span>
-                <span class="dark-logo">
-                    <img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo">
-                </span>
+                @php
+                    $headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('hyper/images/l-logo-ico.png');
+                    $orgPrefixLabel = isset($organization) && $organization->org_prefix
+                        ? $organization->org_prefix
+                        : (isset($organization) ? $organization->name : config('app.name', 'AJPS'));
+                @endphp
+                @hasanyrole('organization-admin|member')
+                    <span class="light-logo">
+                        <img src="{{ $headerLogoUrl }}" alt="Organization Header Logo">
+                    </span>
+                    <span class="dark-logo">
+                        <img src="{{ $headerLogoUrl }}" alt="Organization Header Logo">
+                    </span>
+                @else
+                    <span class="light-logo">
+                        <img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo">
+                    </span>
+                    <span class="dark-logo">
+                        <img src="{{ asset('hyper/images/l-logo-ico.png') }}" alt="logo">
+                    </span>
+                @endhasanyrole
             </div>
             <div class="logo-lg">
-                <span class="light-logo">AJPS</span>
-                <span class="dark-logo">AJPS</span>
+                @hasanyrole('organization-admin|member')
+                    <span class="light-logo">{{ $orgPrefixLabel }}</span>
+                    <span class="dark-logo">{{ $orgPrefixLabel }}</span>
+                @else
+                    <span class="light-logo">AJPS</span>
+                    <span class="dark-logo">AJPS</span>
+                @endhasanyrole
             </div>
         </a>
     </div>
@@ -91,7 +121,11 @@
                 <!-- User Account-->
                 <li class="dropdown user user-menu">
                     <a href="#" class="waves-effect waves-light dropdown-toggle w-auto l-h-12 bg-transparent p-0 no-shadow" title="User" data-bs-toggle="modal" data-bs-target="#quick_user_toggle">
-                        <img src="{{ asset('hyper/images/avatar/avatar-13.png') }}" class="avatar rounded-circle bg-primary-light h-40 w-40" alt="" />
+                        @hasanyrole('organization-admin|member')
+                            <img src="{{ $userAvatar }}" class="avatar rounded-circle bg-primary-light h-40 w-40" alt="User Avatar" />
+                        @else
+                            <img src="{{ $defaultAvatar }}" class="avatar rounded-circle bg-primary-light h-40 w-40" alt="User Avatar" />
+                        @endhasanyrole
                     </a>
                 </li>
 

@@ -31,6 +31,7 @@ class OrganizationController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('organizations', 'name')],
             'org_prefix' => ['nullable', 'string', 'max:10'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'header_logo' => ['nullable', 'image', 'max:2048', 'dimensions:ratio=1/1'],
             'background_image' => ['nullable', 'image', 'max:2048'],
 
             // Admin info
@@ -43,6 +44,9 @@ class OrganizationController extends Controller
         $orgData = $request->only(['name', 'org_prefix']);
         if ($request->hasFile('logo')) {
             $orgData['logo'] = $request->file('logo')->store('organizations', 'public');
+        }
+        if ($request->hasFile('header_logo')) {
+            $orgData['header_logo'] = $request->file('header_logo')->store('organizations/header-logos', 'public');
         }
         if ($request->hasFile('background_image')) {
             $orgData['background_image'] = $request->file('background_image')->store('organizations', 'public');
@@ -96,11 +100,16 @@ class OrganizationController extends Controller
             'name' => ['required', 'string', Rule::unique('organizations', 'name')->ignore($organization->id)],
             'org_prefix' => ['nullable', 'string', 'max:10'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'header_logo' => ['nullable', 'image', 'max:2048', 'dimensions:ratio=1/1'],
             'background_image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         if ($request->hasFile('logo')) {
             $validated['logo'] = $request->file('logo')->store('organizations', 'public');
+        }
+
+        if ($request->hasFile('header_logo')) {
+            $validated['header_logo'] = $request->file('header_logo')->store('organizations/header-logos', 'public');
         }
 
         if ($request->hasFile('background_image')) {

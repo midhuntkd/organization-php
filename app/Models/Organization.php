@@ -11,7 +11,7 @@ class Organization extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'logo','org_prefix', 'background_image'];
+    protected $fillable = ['name', 'slug', 'logo', 'header_logo', 'org_prefix', 'background_image'];
 
     public function users()
     {
@@ -27,22 +27,22 @@ class Organization extends Model
         parent::boot();
 
         static::creating(function ($org) {
-            if (empty($org->slug) && !empty($org->name)) {
-                $org->slug = static::uniqueSlug($org->name);
+            if (empty($org->slug) && !empty($org->org_prefix)) {
+                $org->slug = static::uniqueSlug($org->org_prefix);
             }
         });
 
         static::updating(function ($org) {
-            // Optional: regenerate slug if name changed and slug not explicitly set
-            if ($org->isDirty('name') && !$org->isDirty('slug')) {
-                $org->slug = static::uniqueSlug($org->name, $org->id);
+            // Optional: regenerate slug if org_prefix changed and slug not explicitly set
+            if ($org->isDirty('org_prefix') && !$org->isDirty('slug')) {
+                $org->slug = static::uniqueSlug($org->org_prefix, $org->id);
             }
         });
     }
 
-    protected static function uniqueSlug(string $name, ?int $ignoreId = null): string
+    protected static function uniqueSlug(string $prefix, ?int $ignoreId = null): string
     {
-        $base = Str::slug($name);
+        $base = Str::slug($prefix);
         $slug = $base;
         $i = 2;
 
@@ -68,6 +68,19 @@ class Organization extends Model
             }
         }
         return asset('storage/org/l-logo.png');
+    }
+
+    public function getHeaderLogoUrlAttribute(): string
+    {
+        if ($this->header_logo) {
+            $path = 'storage/' . $this->header_logo;
+            $rootPath = Storage::disk('public')->path($this->header_logo);
+            if (file_exists($rootPath)) {
+                return asset($path);
+            }
+        }
+
+        return $this->logo_url ?? asset('hyper/images/l-logo-ico.png');
     }
 
     public function getBackgroundImageUrlAttribute(): string

@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\SuperAdmin\LoginController as SuperAdminLoginController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\Auth\OrgPasswordResetLinkController;
+use App\Http\Controllers\Auth\OrgNewPasswordController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -182,3 +184,18 @@ Route::middleware(['auth', 'role:super-admin'])
     });
 
 require __DIR__.'/auth.php';
+
+// Guest, organization-scoped password reset (custom design)
+Route::middleware('guest')->group(function () {
+    Route::get('/member/forgot-password/{organization:slug}', [OrgPasswordResetLinkController::class, 'create'])
+        ->name('org.password.request');
+
+    Route::post('/member/forgot-password/{organization:slug}', [OrgPasswordResetLinkController::class, 'store'])
+        ->name('org.password.email');
+
+    Route::get('/member/reset-password/{organization:slug}/{token}', [OrgNewPasswordController::class, 'create'])
+        ->name('org.password.reset');
+
+    Route::post('/member/reset-password/{organization:slug}', [OrgNewPasswordController::class, 'store'])
+        ->name('org.password.store');
+});

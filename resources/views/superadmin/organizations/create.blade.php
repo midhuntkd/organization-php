@@ -20,6 +20,11 @@
             <input type="file" name="logo" class="form-control">
         </div>
         <div class="mb-3">
+            <label>Header Logo (Square)</label>
+            <input type="file" name="header_logo" class="form-control">
+            <small class="form-text text-muted">Recommended: upload a square image for the header.</small>
+        </div>
+        <div class="mb-3">
             <label>Background Image</label>
             <input type="file" name="background_image" class="form-control">
         </div>

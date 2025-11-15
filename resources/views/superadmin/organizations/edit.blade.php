@@ -27,6 +27,14 @@
             <input type="file" name="logo" class="form-control">
         </div>
         <div class="mb-3">
+            <label>Header Logo (Square)</label><br>
+            @if($organization->header_logo)
+                <img src="{{ $organization->header_logo_url }}" width="100" class="mb-2">
+            @endif
+            <input type="file" name="header_logo" class="form-control">
+            <small class="form-text text-muted">Recommended size: square image for the header.</small>
+        </div>
+        <div class="mb-3">
             <label>Background Image</label><br>
             @if($organization->background_image_url)
                 <img src="{{ $organization->background_image_url }}" width="100" class="mb-2">
