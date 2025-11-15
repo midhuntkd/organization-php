@@ -11,6 +11,10 @@
     </ol>
 @endsection
 
+@php
+$headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('hyper/images/l-logo-ico.png');
+@endphp
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -32,8 +36,11 @@
                         <!-- Front Side -->
                         <div class="idc idc-front">
                             <div class="idc-top text-center">
-                                <img src="{{ $organization->logo_url }}" alt="Logo" class="idc-logo">
-                                <div class="idc-org-name mt-2">{{ $organization->name }}</div>
+                                <div class="idc-img-box"><img src="{{ $headerLogoUrl }}" alt="Logo" class="idc-logo-small"></div>
+                                <div class="idc-img-box"><img src="{{ $organization->logo_url }}" alt="Logo" class="idc-logo-small-2"></div>
+                                
+                                
+                                {{-- <div class="idc-org-name mt-2">{{ $organization->name }}</div> --}}
                                 <div class="idc-badge">Membership ID Card</div>
                             </div>
 
@@ -54,8 +61,9 @@
                         <!-- Back Side -->
                         <div class="idc idc-back">
                             <div class="idc-back-top text-right">
-                                <img src="{{ $organization->logo_url }}" alt="Logo" class="idc-logo-small">
-                                <div class="idc-org-name-dark mt-2">{{ strtoupper($organization->name) }}</div>
+                                <div class="idc-img-box"><img src="{{ $headerLogoUrl }}" alt="Logo" class="idc-logo-small"></div>
+                                <div class="idc-img-box"><img src="{{ $organization->logo_url }}" alt="Logo" class="idc-logo-small-2"></div>
+                                {{-- <div class="idc-org-name-dark mt-2">{{ strtoupper($organization->name) }}</div> --}}
                             </div>
                             <div class="idc-back-content">
                                 <div class="idc-back-table">
@@ -68,7 +76,7 @@
                                         {{ $details?->city }} {{ $details?->zipcode }}
                                     </div>
                                     <div class="lbl"><strong>B/G</strong></div>
-                                    <div class="val">{{ $details->blood_group ?? 'N/A' }}</div>
+                                    <div class="val">{{ $details?->blood_group ?? 'N/A' }}</div>
                                     <div class="lbl"><strong>Tel</strong></div>
                                     <div class="val">{{ $user->phone ?: '-' }}</div>
                                 </div>
@@ -119,10 +127,11 @@
 
     /* Back */
     .idc-back { background: #f5f7fa; color:#0d2231; display:grid; grid-template-rows: auto 1fr auto; }
-    .idc-back::before { content:''; position:absolute; top:-30px; left:-40px; width:180px; height:160px; background: linear-gradient(135deg,#102A3B,#0C1F2F); border-bottom-right-radius:80px; opacity:.85; }
-    .idc-back::after { content:''; position:absolute; bottom:-30px; right:-40px; width:180px; height:160px; background: linear-gradient(135deg,#0C1F2F,#21c1d6); border-top-left-radius:80px; opacity:.9; }
-    .idc-back-top { padding: 22px 18px 6px; position: relative; z-index:1; text-align: right; }
-    .idc-logo-small { width: 46px; height: 46px; object-fit: contain; }
+    .idc-back::before { content:''; position:absolute; top:-30px; left:0px; width:100%; height:160px; background: linear-gradient(135deg,#102A3B,#0C1F2F); border-bottom-right-radius:0px; opacity:.85; }
+    .idc-back::after { content:''; position:absolute; bottom:-30px; right:0px; width:100%; height:160px; background: linear-gradient(135deg,#0C1F2F,#21c1d6); border-top-left-radius:0px; opacity:.9; }
+    .idc-back-top { padding: 22px 18px 6px; position: relative; z-index:1; text-align: center; }
+    .idc-logo-small { max-width: 80%; max-height: 30px; object-fit: contain; }
+    .idc-logo-small-2 { max-width: 80%; max-height: 60px; object-fit: contain; }
     .idc-org-name-dark { font-weight:800; font-size: 13px; letter-spacing:.4px; }
     .idc-back-content { padding: 10px 18px 0; font-size: 12px; z-index:1; align-self: center; }
     .idc-back-table { display:grid; grid-template-columns:max-content 1fr; gap:8px 10px; align-items:start; }
@@ -130,6 +139,7 @@
     .idc-back-table .val { line-height:1.3; }
     .idc-notes { margin:12px 0 0; padding-left: 18px; font-size: 11px; }
     .idc-back-footer { padding: 10px 18px 16px; font-size: 11px; z-index:1; color:#2e5163; }
+    .idc-img-box{ display: flex; align-items: center; justify-content: center; width: 100%; height: auto;  }
 
     /* Print only the ID cards */
     @media print {

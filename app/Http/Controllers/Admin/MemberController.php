@@ -11,11 +11,12 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Config;
 
 class MemberController extends Controller
 {
@@ -165,15 +166,41 @@ class MemberController extends Controller
                     }
                 }
             ],
+            'user_image' => ['nullable', 'image', 'max:4096'],
+            'id_card_front' => ['nullable', 'image', 'max:5120'],
+            'id_card_back' => ['nullable', 'image', 'max:5120'],
         ]);
 
-        $user->update([
+        $updateData = [
             'name'                   => $validated['name'],
             'phone'                  => $validated['phone'],
             'country_of_residence'   => $validated['country_of_residence'],
             'verification_type'      => $validated['verification_type'],
             'verification_id_number' => $validated['verification_id_number'],
-        ]);
+        ];
+
+        if ($request->hasFile('user_image')) {
+            if ($user->user_image && Storage::disk('public')->exists($user->user_image)) {
+                Storage::disk('public')->delete($user->user_image);
+            }
+            $updateData['user_image'] = $request->file('user_image')->store('user_images', 'public');
+        }
+
+        if ($request->hasFile('id_card_front')) {
+            if ($user->id_card_front && Storage::disk('public')->exists($user->id_card_front)) {
+                Storage::disk('public')->delete($user->id_card_front);
+            }
+            $updateData['id_card_front'] = $request->file('id_card_front')->store('verifications', 'public');
+        }
+
+        if ($request->hasFile('id_card_back')) {
+            if ($user->id_card_back && Storage::disk('public')->exists($user->id_card_back)) {
+                Storage::disk('public')->delete($user->id_card_back);
+            }
+            $updateData['id_card_back'] = $request->file('id_card_back')->store('verifications', 'public');
+        }
+
+        $user->update($updateData);
 
 
 

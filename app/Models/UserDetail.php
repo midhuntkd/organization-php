@@ -15,6 +15,7 @@ class UserDetail extends Model
         'address_line2',
         'city',
         'zipcode',
+        'blood_group',
         'norka_registration_number',
         'permanent_home_address',
         'insurance_provider',

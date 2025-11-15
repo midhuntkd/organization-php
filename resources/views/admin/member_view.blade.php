@@ -170,7 +170,7 @@
 
 <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form method="POST" id="updateForm" action="{{ route('orgadmin.member.update', [$organization->slug, $user->id]) }} ">
+        <form method="POST" id="updateForm" action="{{ route('orgadmin.member.update', [$organization->slug, $user->id]) }} " enctype="multipart/form-data">
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
@@ -218,7 +218,36 @@
                         <label class="form-label">Verification ID Number</label>
                         <input type="text" name="verification_id_number" value="{{ $user->verification_id_number }}" class="form-control" required maxlength="255">
                     </div>
-
+                    <div class="mb-3">
+                        <label class="form-label">Profile Photo</label>
+                        <input type="file" name="user_image" class="form-control @error('user_image') is-invalid @enderror" accept="image/*">
+                        @error('user_image')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @if ($user->user_image)
+                            <img src="{{ $user->user_image_url }}" alt="User photo" class="mt-2 rounded" width="120">
+                        @endif
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ID Front</label>
+                        <input type="file" name="id_card_front" class="form-control @error('id_card_front') is-invalid @enderror" accept="image/*">
+                        @error('id_card_front')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @if ($user->id_card_front_url)
+                            <img src="{{ $user->id_card_front_url }}" alt="Front ID" class="mt-2 rounded" width="150">
+                        @endif
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ID Back</label>
+                        <input type="file" name="id_card_back" class="form-control @error('id_card_back') is-invalid @enderror" accept="image/*">
+                        @error('id_card_back')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @if ($user->id_card_back_url ?? false)
+                            <img src="{{ $user->id_card_back_url }}" alt="Back ID" class="mt-2 rounded" width="150">
+                        @endif
+                    </div>
 
                 </div>
                 <div class="modal-footer">

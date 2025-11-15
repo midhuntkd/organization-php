@@ -47,6 +47,25 @@
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Blood Group</label>
+                                @php
+                                    $bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+                                @endphp
+                                <select name="blood_group"
+                                    class="form-select @error('blood_group') is-invalid @enderror">
+                                    <option value="">-- Select --</option>
+                                    @foreach ($bloodGroups as $group)
+                                        <option value="{{ $group }}" @selected(old('blood_group', $details->blood_group) === $group)>
+                                            {{ $group }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('blood_group')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Profile Image</label>
                                 <input type="file" name="user_image"
                                     class="form-control @error('user_image') is-invalid @enderror" accept="image/*">

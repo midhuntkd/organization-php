@@ -46,6 +46,7 @@ class ProfileController extends Controller
                 'address_line2' => $data['address_line2'] ?? null,
                 'city' => $data['city'] ?? null,
                 'zipcode' => $data['zipcode'] ?? null,
+                'blood_group' => $data['blood_group'] ?? null,
                 'norka_registration_number' => $data['norka_registration_number'] ?? null,
                 'permanent_home_address' => $data['permanent_home_address'] ?? null,
                 'insurance_provider' => $data['insurance_provider'] ?? null,

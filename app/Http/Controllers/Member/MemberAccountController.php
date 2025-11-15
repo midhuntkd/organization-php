@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
+use App\Models\Membership;
+use App\Models\User as UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -63,6 +65,27 @@ class MemberAccountController extends Controller
     public function dashboard(Organization $organization)
     {
         $user = Auth::user();
+
+        $currentMembership = $user->membership;
+        if (
+            !$user->membership_id ||
+            !$currentMembership ||
+            $currentMembership->organization_id !== $organization->id
+        ) {
+            $defaultMembership = Membership::where('organization_id', $organization->id)
+                ->where('status', 'active')
+                ->where('is_default', true)
+                ->first();
+
+            if ($defaultMembership) {
+                $user->membership_id = $defaultMembership->id;
+                if (empty($user->membership_code)) {
+                    $user->membership_code = UserModel::nextMembershipCode($organization, $defaultMembership);
+                }
+                $user->save();
+                $user->unsetRelation('membership');
+            }
+        }
 
         // eager-load membership with category, rules, benefits
         $user->load([
