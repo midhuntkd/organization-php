@@ -129,18 +129,18 @@
                     </li> --}}
 
 
-                    <li class="treeview {{ request()->is('super-admin/organizations*') ? 'menu-open active' : '' }}">
-                        <a href="#">
+                    <li >
+                        <a href="{{ route('superadmin.organizations.index') }}">
                             <i data-feather="credit-card"></i>
                             <span>Organizations</span>
-                            <span class="pull-right-container">
+                            {{-- <span class="pull-right-container">
                                 <i class="fa fa-angle-right pull-right"></i>
-                            </span>
+                            </span> --}}
                         </a>
-                        <ul class="treeview-menu">
+                        {{-- <ul class="treeview-menu">
                             <li class="{{ request()->routeIs('superadmin.organizations.index') ? 'active' : '' }}"><a href="{{ route('superadmin.organizations.index') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
                             <li class="{{ request()->routeIs('superadmin.organizations.create') ? 'active' : '' }}"><a href="{{ route('superadmin.organizations.create') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
-                        </ul>
+                        </ul> --}}
                     </li>
                     @endhasrole
                 </ul>
