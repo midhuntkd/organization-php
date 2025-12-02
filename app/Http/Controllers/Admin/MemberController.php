@@ -16,52 +16,58 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
 
 class MemberController extends Controller
 {
     public function showMemberList(Organization $organization)
     {
-        $members = User::role('member')->where(['organization_id' => $organization->id, 'approved' => 1])->with('organization')->get();
+        $members = User::role('member')
+            ->where(['organization_id' => $organization->id, 'approved' => 1])
+            ->with('organization')
+            ->get();
+
         return view('admin.member_list_approve', compact('members', 'organization'));
     }
 
     public function showApprovalMemberList(Organization $organization)
     {
-        $members = User::role('member')->where(['organization_id'=> $organization->id, 'approved'=>0])->with('organization')->get();
+        $members = User::role('member')
+            ->where(['organization_id' => $organization->id, 'approved' => 0])
+            ->with('organization')
+            ->get();
+
         return view('admin.member_list', compact('members', 'organization'));
     }
-    
+
+    public function permissionIndex(Organization $organization)
+    {
+        $members = User::role('member')
+            ->where('organization_id', $organization->id)
+            ->with('permissions')
+            ->get();
+
+        [$permissionOptions] = $this->getPermissionDataForUser(new User());
+
+        return view('admin.member_permissions', compact('members', 'organization', 'permissionOptions'));
+    }
+
     public function approve(Request $request, Organization $organization, User $user)
     {
-
         if (is_string($organization)) {
             $organization = Organization::where('slug', $organization)->first();
         }
 
-        //abort_unless($user->organization_id === $organization->id, 403);
         $plain = mt_rand(1000, 9999);
 
-        // 1) Get default membership for this org
         $membership = Membership::where('organization_id', $organization->id)
             ->where('is_default', true)
             ->where('status', 'active')
             ->first();
-        if (! $membership) {
-            // $membership = Membership::with('category')
-            //     ->where('organization_id', $organization->id)
-            //     ->where('status', 'active')
-            //     ->first();
-            
-            return back()->with('error', 'No default membership is set for this organization.');
-             
-        }
 
-        // 2) Generate the membership code
-        //$category = $membership->category; // must exist
-        // if (! $category) {
-        //     return back()->with('error', 'The default membership has no category.');
-        // }
+        if (! $membership) {
+            return back()->with('error', 'No default membership is set for this organization.');
+        }
 
         $membershipCode = User::nextMembershipCode($organization, $membership);
 
@@ -71,14 +77,14 @@ class MemberController extends Controller
             'rejected'         => false,
             'membership_id'    => $membership->id,
             'membership_code'  => $membershipCode,
-            'password_changed' => false,  // they must update on first login
+            'password_changed' => false,
+            'membership_started_at' => now(),
         ]);
 
         $loginUrl = route('member_login', $organization->slug);
         $verifyUrl = null;
 
         if (! $user->hasVerifiedEmail()) {
-            // If you use your custom verify route from earlier:
             $verifyUrl = URL::temporarySignedRoute(
                 'custom.verification.verify',
                 now()->addMinutes(Config::get('auth.verification.expire', 60)),
@@ -88,6 +94,7 @@ class MemberController extends Controller
                 ]
             );
         }
+
         Mail::to($user->email)->send(
             new MemberApprovedMail($user, $organization, $plain, $loginUrl, $verifyUrl)
         );
@@ -97,12 +104,9 @@ class MemberController extends Controller
 
     public function reject(Request $request, $organization, User $user)
     {
-
         if (is_string($organization)) {
             $organization = Organization::where('slug', $organization)->first();
         }
-
-        //abort_unless($user->organization_id === $organization->id, 403);
 
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
@@ -118,7 +122,7 @@ class MemberController extends Controller
 
         $user->update([
             'rejected' => true,
-            'approved' => false, // ensure not approved
+            'approved' => false,
         ]);
 
         Mail::to($user->email)->send(
@@ -133,19 +137,17 @@ class MemberController extends Controller
         if (is_string($organization)) {
             $organization = Organization::where('slug', $organization)->first();
         }
-        //abort_unless($user->organization_id === $organization->id, 403);
 
-        return view('admin.member_view', compact('user', 'organization'));
+        [$permissionOptions, $userPermissions] = $this->getPermissionDataForUser($user);
+
+        return view('admin.member_view', compact('user', 'organization', 'permissionOptions', 'userPermissions'));
     }
 
     public function update(Request $request, $organization, User $user)
     {
-
         if (is_string($organization)) {
             $organization = Organization::where('slug', $organization)->first();
         }
-
-        //abort_unless($user->organization_id === $organization->id, 403);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -202,9 +204,50 @@ class MemberController extends Controller
 
         $user->update($updateData);
 
-
-
         return back()->with('status', 'Member information updated.');
     }
 
+    public function updatePermissions(Request $request, Organization $organization, User $user)
+    {
+        if ($user->organization_id !== $organization->id) {
+            abort(403);
+        }
+
+        $requested = $request->input('permissions', []);
+
+        $allowed = collect($this->permissionOptions())->pluck('key')->toArray();
+
+        $safePermissions = collect($requested)
+            ->filter(fn($value) => in_array($value, $allowed, true))
+            ->values()
+            ->all();
+
+        foreach ($safePermissions as $permission) {
+            Permission::firstOrCreate(
+                ['name' => $permission],
+                ['guard_name' => 'web']
+            );
+        }
+
+        $user->syncPermissions($safePermissions);
+
+        return back()->with('status', 'Permissions updated for this member.');
+    }
+
+    protected function getPermissionDataForUser(User $user): array
+    {
+        $options = $this->permissionOptions();
+        $current = $user->getPermissionNames()->toArray();
+
+        return [$options, $current];
+    }
+
+    protected function permissionOptions(): array
+    {
+        return [
+            ['key' => 'access.members', 'label' => 'Manage Members'],
+            ['key' => 'access.memberships', 'label' => 'Manage Membership Plans (plans, rules, benefits, upgrades)'],
+            ['key' => 'access.payments', 'label' => 'Manage Payments'],
+        ];
+    }
 }

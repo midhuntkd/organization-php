@@ -13,7 +13,7 @@
                 <!-- sidebar menu-->
                 <ul class="sidebar-menu" data-widget="tree">
                     <li class="header fs-10 m-0 text-uppercase">Dashboard</li>
-                    @role('organization-admin')
+                    @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.members') || auth()->user()->can('access.memberships') || auth()->user()->can('access.upcoming_modules'))
                     <li>
                         <a href="{{ route('orgadmin.dashboard', $organization->slug) }}">
                             <i data-feather="home"></i>
@@ -23,19 +23,22 @@
                             </span> -->
                         </a>
                     </li>
-                    <li class="treeview">
-                        <a href="#">
-                            <i data-feather="box"></i>
-                            <span>Members</span>
-                            <span class="pull-right-container">
-                                <i class="fa fa-angle-right pull-right"></i>
-                            </span>
-                        </a>
-                        <ul class="treeview-menu">
-                            <li><a href="{{ route('orgadmin.members.myapprovals', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>My Approvals</a></li>
-                            <li><a href="{{ route('orgadmin.members', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Members</a></li>
-                        </ul>
-                    </li>
+                    @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.members'))
+                        <li class="treeview">
+                            <a href="#">
+                                <i data-feather="box"></i>
+                                <span>Members</span>
+                                <span class="pull-right-container">
+                                    <i class="fa fa-angle-right pull-right"></i>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="{{ route('orgadmin.members.myapprovals', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>My Approvals</a></li>
+                                <li><a href="{{ route('orgadmin.members', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Members</a></li>
+                                <li><a href="{{ route('orgadmin.members.permissions', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Permissions</a></li>
+                            </ul>
+                        </li>
+                    @endif
                     <!-- <li class="header fs-10 m-0 text-uppercase">Components</li> -->
                     <!-- <li class="treeview">
                         <a href="#">
@@ -50,48 +53,67 @@
                             <li><a href="{{ route('orgadmin.membership-categories.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
                         </ul>
                     </li> -->
-                    <li class="treeview">
-                        <a href="#">
-                            <i data-feather="credit-card"></i>
-                            <span>Membership Plans</span>
-                            <span class="pull-right-container">
-                                <i class="fa fa-angle-right pull-right"></i>
-                            </span>
-                        </a>
-                        <ul class="treeview-menu">
-                            <li><a href="{{ route('orgadmin.memberships.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
-                            <li><a href="{{ route('orgadmin.memberships.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
-                        </ul>
-                    </li>
+                    @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.memberships'))
+                        <li class="treeview">
+                            <a href="#">
+                                <i data-feather="credit-card"></i>
+                                <span>Membership Plans</span>
+                                <span class="pull-right-container">
+                                    <i class="fa fa-angle-right pull-right"></i>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="{{ route('orgadmin.memberships.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
+                                <li><a href="{{ route('orgadmin.memberships.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
+                                <li><a href="{{ route('orgadmin.membership_upgrades.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Upgrade Approvals</a></li>
+                            </ul>
+                        </li>
 
-                    <li class="treeview">
-                        <a href="#">
-                            <i data-feather="credit-card"></i>
-                            <span>Membership Benefits</span>
-                            <span class="pull-right-container">
-                                <i class="fa fa-angle-right pull-right"></i>
-                            </span>
-                        </a>
-                        <ul class="treeview-menu">
-                            <li><a href="{{ route('orgadmin.membership_benefits.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
-                            <li><a href="{{ route('orgadmin.membership_benefits.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
-                        </ul>
-                    </li>
+                        <li class="treeview">
+                            <a href="#">
+                                <i data-feather="credit-card"></i>
+                                <span>Membership Benefits</span>
+                                <span class="pull-right-container">
+                                    <i class="fa fa-angle-right pull-right"></i>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="{{ route('orgadmin.membership_benefits.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
+                                <li><a href="{{ route('orgadmin.membership_benefits.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
+                            </ul>
+                        </li>
 
-                    <li class="treeview">
-                        <a href="#">
-                            <i data-feather="credit-card"></i>
-                            <span>Membership Rules</span>
-                            <span class="pull-right-container">
-                                <i class="fa fa-angle-right pull-right"></i>
-                            </span>
-                        </a>
-                        <ul class="treeview-menu">
-                            <li><a href="{{ route('orgadmin.membership_rules.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
-                            <li><a href="{{ route('orgadmin.membership_rules.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
-                        </ul>
-                    </li>
-                    @endrole
+                        <li class="treeview">
+                            <a href="#">
+                                <i data-feather="credit-card"></i>
+                                <span>Membership Rules</span>
+                                <span class="pull-right-container">
+                                    <i class="fa fa-angle-right pull-right"></i>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="{{ route('orgadmin.membership_rules.index', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
+                                <li><a href="{{ route('orgadmin.membership_rules.create', $organization->slug) }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Add New</a></li>
+                            </ul>
+                        </li>
+
+                        @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.payments'))
+                        <li>
+                            <a href="{{ route('orgadmin.transactions.index', $organization->slug) }}">
+                                <i data-feather="list"></i>
+                                <span>Transactions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('orgadmin.payments.index', $organization->slug) }}">
+                                <i data-feather="dollar-sign"></i>
+                                <span>Payments approvals</span>
+                            </a>
+                        </li>
+                        @endif
+                    @endif
+
+                    @endif
                     @role('member')
                     <li>
                         <a href="{{ route('member.dashboard', $organization->slug) }}">

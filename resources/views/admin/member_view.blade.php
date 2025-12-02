@@ -124,6 +124,30 @@
                                 </div>
                             </div>
 
+                            @if(auth()->user()->hasAnyRole('organization-admin', 'super-admin'))
+                            <hr>
+                            <h5 class="mb-3" id="permissions">Access Permissions</h5>
+                            <form method="POST" action="{{ route('orgadmin.member.permissions', [$organization->slug, $user->id]) }}">
+                                @csrf
+                                <div class="row">
+                                    @foreach($permissionOptions as $option)
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="permissions[]"
+                                                value="{{ $option['key'] }}"
+                                                id="perm_{{ $option['key'] }}"
+                                                @checked(in_array($option['key'], $userPermissions, true))>
+                                            <label class="form-check-label" for="perm_{{ $option['key'] }}">
+                                                {{ $option['label'] }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm mt-2">Save Permissions</button>
+                            </form>
+                            @endif
+
                         </div>
                         <!-- /.col -->
                     </div>

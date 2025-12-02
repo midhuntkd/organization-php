@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\MembershipBenefitController;
 use App\Http\Controllers\Admin\MembershipCategoryController;
+use App\Http\Controllers\Admin\MembershipPlanUpgradeController;
 use App\Http\Controllers\Admin\MembershipController;
 use App\Http\Controllers\Admin\MembershipRuleController;
 use App\Http\Controllers\Auth\CustomLoginController;
@@ -65,7 +66,7 @@ Route::post('/auth/precheck/{organization:slug?}', [CustomLoginController::class
 Route::get('/member/register/{organization}/resubmit/{user}', [CustomRegisterController::class, 'resubmit'])->name('member_register.resubmit_view');
 Route::post('/member/register/{organization}/resubmit/{user}', [CustomRegisterController::class, 'resubmitAction'])->name('member_register.resubmit');
 
-Route::middleware(['auth', 'role:organization-admin'])
+Route::middleware(['auth', 'role:organization-admin|member'])
     ->prefix('{organization:slug}/admin')    
     ->name('orgadmin.')
     ->scopeBindings()
@@ -74,36 +75,67 @@ Route::middleware(['auth', 'role:organization-admin'])
             ->group(function () {
 
                 Route::get('/dashboard', [MemberController::class, 'showMemberList'])
+                    ->middleware('org.permission:access.members|access.memberships')
                     ->name('dashboard');
-                //Route::resource('/members', OrgUserController::class);
-                Route::get('/member/list', [MemberController::class, 'showMemberList'])->name('members');
-                Route::get('/member/list/approvals', [MemberController::class, 'showApprovalMemberList'])->name('members.myapprovals');
-                Route::get('/member/approve/{user}', [MemberController::class, 'approve'])->name('member.approve');
-                
-                Route::post('/member/approve/{user}', [MemberController::class, 'approve'])
-                    ->name('member.approve.post'); // for AJAX
 
-                Route::post('/members/{user}/reject',  [MemberController::class, 'reject'])
-                    ->name('member.reject');
+                Route::middleware('org.permission:access.members')->group(function () {
+                    Route::get('/member/list', [MemberController::class, 'showMemberList'])->name('members');
+                    Route::get('/member/list/approvals', [MemberController::class, 'showApprovalMemberList'])->name('members.myapprovals');
+                    Route::get('/member/permissions', [MemberController::class, 'permissionIndex'])->name('members.permissions');
+                    Route::get('/member/approve/{user}', [MemberController::class, 'approve'])->name('member.approve');
+                    
+                    Route::post('/member/approve/{user}', [MemberController::class, 'approve'])
+                        ->name('member.approve.post'); // for AJAX
 
-                Route::get('/members/{user}/view',  [MemberController::class, 'view'])
-                    ->name('member.view');
+                    Route::post('/members/{user}/reject',  [MemberController::class, 'reject'])
+                        ->name('member.reject');
 
-                Route::post('/members/{user}/update',  [MemberController::class, 'update'])
-                    ->name('member.update');    
+                    Route::get('/members/{user}/view',  [MemberController::class, 'view'])
+                        ->name('member.view');
 
-                Route::resource('membership-categories', MembershipCategoryController::class);
-                Route::resource('memberships', MembershipController::class);
+                    Route::post('/members/{user}/update',  [MemberController::class, 'update'])
+                        ->name('member.update');    
 
-                // Nested resources for rules & benefits
-                Route::resource('membership-rules', MembershipRuleController::class)
-                ->except(['show'])
-                ->names('membership_rules');
+                    Route::post('/members/{user}/permissions', [MemberController::class, 'updatePermissions'])
+                        ->name('member.permissions');
+                });
 
-                Route::resource('membership-benefits', MembershipBenefitController::class)
+                Route::middleware('org.permission:access.memberships')->group(function () {
+                    Route::resource('membership-categories', MembershipCategoryController::class);
+                    Route::resource('memberships', MembershipController::class);
+                    Route::get('/membership-upgrade-requests', [MembershipPlanUpgradeController::class, 'index'])
+                        ->name('membership_upgrades.index');
+                    Route::get('/membership-upgrade-requests/{upgradeRequest}', [MembershipPlanUpgradeController::class, 'show'])
+                        ->name('membership_upgrades.show');
+                    Route::post('/membership-upgrade-requests/{upgradeRequest}/approve', [MembershipPlanUpgradeController::class, 'approve'])
+                        ->name('membership_upgrades.approve');
+                    Route::post('/membership-upgrade-requests/{upgradeRequest}/reject', [MembershipPlanUpgradeController::class, 'reject'])
+                        ->name('membership_upgrades.reject');
+
+                    // Nested resources for rules & benefits
+                    Route::resource('membership-rules', MembershipRuleController::class)
                     ->except(['show'])
-                    ->names('membership_benefits');
-    
+                    ->names('membership_rules');
+
+                    Route::resource('membership-benefits', MembershipBenefitController::class)
+                        ->except(['show'])
+                        ->names('membership_benefits');
+                });
+
+                Route::middleware('org.permission:access.payments')->group(function () {
+                    Route::get('/payments', [\App\Http\Controllers\Admin\PaymentApprovalController::class, 'index'])
+                        ->name('payments.index');
+                    Route::get('/payments/{ledger}', [\App\Http\Controllers\Admin\PaymentApprovalController::class, 'show'])
+                        ->name('payments.show');
+                    Route::post('/payments/{ledger}/approve', [\App\Http\Controllers\Admin\PaymentApprovalController::class, 'approve'])
+                        ->name('payments.approve');
+                    Route::post('/payments/{ledger}/reject', [\App\Http\Controllers\Admin\PaymentApprovalController::class, 'reject'])
+                        ->name('payments.reject');
+
+                    Route::get('/transactions', [MemberAccountController::class, 'transactions'])
+                        ->name('transactions.index');
+                });
+
             });
     });
 
@@ -115,19 +147,30 @@ Route::middleware(['auth', 'role:member'])
     ->prefix('{organization:slug}/member')     // e.g. /acme/admin/...
     ->name('member.')
     ->group(function () {
-        Route::middleware(['org.context'])    // custom, see below
-            ->group(function () {
+                Route::middleware(['org.context'])    // custom, see below
+                    ->group(function () {
 
-                Route::get('/password/change', [MemberAccountController::class, 'showChangePassword'])
-                    ->name('password.change');
+                        Route::get('/password/change', [MemberAccountController::class, 'showChangePassword'])
+                            ->name('password.change');
                 Route::post('/password/change', [MemberAccountController::class, 'updatePassword'])
                     ->name('password.change.submit');
 
                 // Member dashboard (protect with "force.password.change" so they must change it first)
-                Route::middleware(['force.password.change'])->group(function () {
+                        Route::middleware(['force.password.change'])->group(function () {
 
-                    Route::get('/dashboard', [MemberAccountController::class, 'dashboard'])
-                        ->name('dashboard');
+                            Route::get('/dashboard', [MemberAccountController::class, 'dashboard'])
+                                ->name('dashboard');
+                            Route::post('/payments', [\App\Http\Controllers\Member\PaymentController::class, 'store'])
+                                ->name('payments.store');
+                            Route::get('/transactions', [MemberAccountController::class, 'transactions'])
+                                ->name('transactions.index');
+
+                            Route::get('/memberships/upgrade', [MemberAccountController::class, 'showUpgradeMembership'])
+                                ->name('membership.upgrade');
+                            Route::get('/memberships/{membership}/details', [MemberAccountController::class, 'getMembershipDetails'])
+                                ->name('membership.details');
+                    Route::post('/memberships/change', [MemberAccountController::class, 'changeMembership'])
+                        ->name('membership.change');
                         
                 });     
 

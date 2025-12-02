@@ -56,7 +56,11 @@
                             <div class="box flex-fill">
                                 <div class="box-header with-border d-flex justify-content-between align-items-center">
                                     <h4 class="box-title">Membership Details</h4>
-                                    <button type="button" class="btn btn-primary strip-btn">Upgrade Membership</button>
+                                    @if ($pendingUpgradeRequest)
+                                        <span class="badge bg-warning text-dark">Request Pending</span>
+                                    @else
+                                        <a href="{{ route('member.membership.upgrade', $organization->slug) }}" class="btn btn-primary strip-btn">Upgrade Membership</a>
+                                    @endif
                                 </div>
                                 <div class="box-body">
                                     <div class="row">
@@ -70,6 +74,16 @@
                                             
                                         </div>
                                     </div>
+                                    @if(!$pendingUpgradeRequest && $rejectedUpgradeRequest)
+                                        <div class="alert alert-danger mt-3 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                Your last upgrade request was rejected.
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#rejectReasonModal">
+                                                View Reason
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -80,14 +94,22 @@
                                 <div class="box-header with-border d-flex justify-content-between align-items-center">
                                     <h4 class="box-title">My Wallet</h4>
                                 </div>
-                                <div class="box-body text-center">
-                                    <img src="{{ asset('hyper/images/wallet-card.png') }}" alt="User Avatar"
-                                                class="mb-3" style="max-width: 100%;max-height:150px;">
-                                    <br/> 
+                                <div class="box-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-dark fw-semibold">Pending Balance</span>
+                                        <span class="fw-bold text-primary">{{ number_format($wallet['pending_balance'], 2) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-dark fw-semibold">Payments Awaiting Approval</span>
+                                        <span class="fw-bold text-info">{{ number_format($wallet['pending_payments'], 2) }}</span>
+                                    </div>
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                               
-                                        <p class="mb-1"><strong> 255.22</strong></p>
-                                        <button class="btn btn-primary btn-sm" id="topup">TOPUP MY WALLET</button>
+                                        <span class="text-dark fw-semibold">Plan</span>
+                                        <span class="fw-bold text-success">{{ $membership->name }}</span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#topupModal">Topup / Pay</button>
+                                        <button class="btn btn-outline-secondary btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#historyModal">View History</button>
                                     </div>
                                 </div>
                             </div>
@@ -183,12 +205,164 @@
             </div>
         </div>
     </section>
+
+    {{-- Topup Modal --}}
+    <div class="modal fade" id="topupModal" tabindex="-1" aria-labelledby="topupModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" method="POST" action="{{ route('member.payments.store', $organization->slug) }}" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="topupModalLabel">Submit Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Amount <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" step="0.01" min="0.01" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method <span class="text-danger">*</span></label>
+                        <select name="payment_method" id="payment_method" class="form-select" required>
+                            <option value="online_transfer">Online Transfer</option>
+                            <option value="by_hand">By Hand</option>
+                            <option value="cheque_draft">Cheque / Draft</option>
+                            <option value="other">Other Method</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="handoverRow">
+                        <label class="form-label">Hand Over Person</label>
+                        <input type="text" name="handover_person" class="form-control" placeholder="Person who collected cash">
+                    </div>
+                    <div class="mb-3" id="proofRow">
+                        <label class="form-label">Proof Image</label>
+                        <input type="file" name="proof" accept="image/*" class="form-control">
+                        <small class="text-muted">Required for methods other than "By Hand".</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date <span class="text-danger">*</span></label>
+                        <input type="date" name="payment_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" maxlength="2000" placeholder="Optional notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit for Approval</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- History Modal --}}
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="historyModalLabel">Payment & Charges History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-2">Showing your latest 10 transactions.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Reason</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($wallet['history'] as $entry)
+                                    <tr>
+                                        <td>{{ $entry->created_at?->format('d M Y') }}</td>
+                                        <td>{{ ucfirst($entry->entry_type) }}</td>
+                                        <td>{{ $entry->reason }}</td>
+                                        <td class="fw-bold {{ $entry->entry_type === 'charge' ? 'text-danger' : 'text-success' }}">
+                                            {{ $entry->entry_type === 'charge' ? '-' : '+' }}{{ number_format($entry->amount, 2) }}
+                                        </td>
+                                        <td>
+                                            @if($entry->status === 'approved')
+                                                <span class="badge bg-success">Approved</span>
+                                            @elseif($entry->status === 'pending')
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            @else
+                                                <span class="badge bg-danger">Rejected</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($entry->status === 'rejected' && $entry->rejected_reason)
+                                                <div><strong>Rejected:</strong> {!! nl2br(e($entry->rejected_reason)) !!}</div>
+                                            @endif
+                                            @if($entry->description)
+                                                <div>{!! nl2br(e($entry->description)) !!}</div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" class="text-center text-muted">No history yet.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('member.transactions.index', $organization->slug) }}" class="btn btn-primary">View All Transactions</a>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if(!$pendingUpgradeRequest && $rejectedUpgradeRequest)
+    <div class="modal fade" id="rejectReasonModal" tabindex="-1" aria-labelledby="rejectReasonModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectReasonModalLabel">Upgrade Request Rejection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-1"><strong>Requested Plan:</strong> {{ $rejectedUpgradeRequest->membership?->name ?? '-' }}</p>
+                    <p class="mb-3"><strong>Rejected On:</strong> {{ $rejectedUpgradeRequest->rejected_at?->format('d M Y, h:i A') ?? '-' }}</p>
+                    <div class="border rounded p-3 bg-light">
+                        {!! nl2br(e($rejectedUpgradeRequest->reject_reason ?? 'No reason provided.')) !!}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <a href="{{ route('member.membership.upgrade', $organization->slug) }}" class="btn btn-primary">Resubmit Upgrade</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 @endsection
 @push('scripts')
     <script>
-        const topup = document.getElementById('topup');
-        topup.addEventListener('click', async function() {
-            alert('Topup feature coming soon!');
+        document.addEventListener('DOMContentLoaded', function() {
+            const methodSelect = document.getElementById('payment_method');
+            const proofInputRow = document.getElementById('proofRow');
+            const handoverRow = document.getElementById('handoverRow');
+
+            const toggleConditionalFields = () => {
+                const method = methodSelect.value;
+                if (method === 'by_hand') {
+                    handoverRow.classList.remove('d-none');
+                    proofInputRow.classList.add('d-none');
+                } else {
+                    handoverRow.classList.add('d-none');
+                    proofInputRow.classList.remove('d-none');
+                }
+            };
+
+            methodSelect.addEventListener('change', toggleConditionalFields);
+            toggleConditionalFields();
         });
     </script>
 @endpush

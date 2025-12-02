@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Models\MembershipPlanUpgradeRequest;
+use App\Models\User;
 
 class Organization extends Model
 {
@@ -111,6 +113,23 @@ class Organization extends Model
     public function memberships()
     {
         return $this->hasMany(Membership::class);
+    }
+
+    public function upgradeRequests()
+    {
+        return $this->hasManyThrough(
+            MembershipPlanUpgradeRequest::class,
+            User::class,
+            'organization_id', // Foreign key on users table...
+            'user_id',         // Foreign key on membership_plan_upgrade_requests table...
+            'id',              // Local key on organizations table...
+            'id'               // Local key on users table...
+        );
+    }
+
+    public function ledgers()
+    {
+        return $this->hasMany(MembershipPaymentLedger::class);
     }
 
     protected static function booted()
