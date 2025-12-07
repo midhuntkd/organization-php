@@ -11,6 +11,10 @@ class MembershipBenefit extends Model
 
     protected $fillable = ['organization_id', 'title', 'description'];
 
+    protected $casts = [
+        'organization_id' => 'integer',
+    ];
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);

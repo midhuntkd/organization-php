@@ -15,6 +15,11 @@ class MembershipCategory extends Model
         'is_default'
     ];
 
+    protected $casts = [
+        'organization_id' => 'integer',
+        'is_default' => 'boolean',
+    ];
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);

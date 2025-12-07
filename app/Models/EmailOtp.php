@@ -24,6 +24,9 @@ class EmailOtp extends Model
         'expires_at' => 'datetime',
         'verified_at' => 'datetime',
         'last_sent_at' => 'datetime',
+        'organization_id' => 'integer',
+        'attempts' => 'integer',
+        'resend_count' => 'integer',
     ];
 
     public function scopeActive($q)

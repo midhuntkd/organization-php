@@ -26,6 +26,7 @@ class UserDetail extends Model
 
     protected $casts = [
         'expiry_date' => 'date',
+        'user_id' => 'integer',
     ];
 
     public function user()

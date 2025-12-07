@@ -22,6 +22,11 @@ class MembershipPlanUpgradeRequest extends Model
 
     protected $casts = [
         'rejected_at' => 'datetime',
+        'user_id' => 'integer',
+        'current_membership_id' => 'integer',
+        'membership_id' => 'integer',
+        'approved_by' => 'integer',
+        'rejected_by' => 'integer',
     ];
 
     public function user()

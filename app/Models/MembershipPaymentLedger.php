@@ -33,6 +33,12 @@ class MembershipPaymentLedger extends Model
         'payment_date' => 'date',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'organization_id' => 'integer',
+        'user_id' => 'integer',
+        'membership_id' => 'integer',
+        'approved_by' => 'integer',
+        'rejected_by' => 'integer',
+        'amount' => 'float',
     ];
 
     public function user()

@@ -57,6 +57,8 @@
         <!-- Footer -->
         @include('layouts.partials.footer')
     </div>
+    {{-- Page specific modals --}}
+    @stack('modals')
     <!-- Vendor JS -->
     <script src="{{ asset('hyper/template/vertical/src/js/vendors.min.js') }}">
     </script>

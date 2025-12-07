@@ -64,6 +64,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'approved' => 'boolean',
             'password_changed' => 'boolean',
+            'organization_id' => 'integer',
+            'membership_id' => 'integer',
         ];
     }
 

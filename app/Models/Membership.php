@@ -17,6 +17,13 @@ class Membership extends Model
         'is_default'
     ];
 
+    protected $casts = [
+        'organization_id' => 'integer',
+        'joining_fee' => 'float',
+        'monthly_fee' => 'float',
+        'is_default' => 'boolean',
+    ];
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);

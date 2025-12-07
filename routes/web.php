@@ -23,6 +23,10 @@ use App\Http\Controllers\Auth\OrgPasswordResetLinkController;
 use App\Http\Controllers\Auth\OrgNewPasswordController;
 use App\Http\Controllers\UserViewModeController;
 use App\Http\Controllers\AccountPasswordController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use App\Models\Organization;
+use App\Models\MembershipPaymentLedger;
 
 Route::get('/', function () {
     return view('welcome');
@@ -249,4 +253,51 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/member/reset-password/{organization:slug}', [OrgNewPasswordController::class, 'store'])
         ->name('org.password.store');
+});
+
+
+Route::get('/clear-route-cache', function () {
+    \Artisan::call('route:clear');
+    return "Route cache cleared!";
+});
+
+Route::get('/clear-all-caches', function () {
+    Artisan::call('optimize:clear');
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+
+    return 'Application, route, and config caches cleared.';
+});
+
+Route::get('/debug/payments/{slug}/{ledgerId}', function (string $slug, int $ledgerId) {
+    // Quick diagnostics for payment routes and ledger/org binding
+    $routeExists = collect(app('router')->getRoutes())
+        ->contains(function ($route) {
+            return $route->getName() === 'orgadmin.payments.show';
+        });
+
+    $org = Organization::where('slug', $slug)->first();
+    $ledger = MembershipPaymentLedger::find($ledgerId);
+
+    $belongs = $org && $ledger && $ledger->organization_id === $org->id;
+    $fixed = false;
+
+    if (request()->boolean('fix') && $org && $ledger && ! $belongs) {
+        DB::table('membership_payment_ledgers')
+            ->where('id', $ledgerId)
+            ->update(['organization_id' => $org->id]);
+
+        $fixed = true;
+        $ledger = MembershipPaymentLedger::find($ledgerId); // refresh
+        $belongs = $ledger && $ledger->organization_id === $org->id;
+    }
+
+    return response()->json([
+        'route_exists' => $routeExists,
+        'organization' => $org ? ['id' => $org->id, 'slug' => $org->slug] : null,
+        'ledger' => $ledger ? ['id' => $ledger->id, 'organization_id' => $ledger->organization_id] : null,
+        'belongs_to_org' => $belongs,
+        'fixed' => $fixed,
+        'fix_hint' => 'Add ?fix=1 to attempt to align ledger.organization_id with org',
+    ]);
 });
