@@ -6,11 +6,17 @@
     @php
         $logoPath = $organization->logo ? public_path('storage/'.$organization->logo) : null;
         $photoPath = $user->user_image ? public_path('storage/'.$user->user_image) : null;
+        $memberLoginUrl = route('member_login', ['organization' => $organization->slug]);
+        $adminEmail = $organization->users()
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'organization-admin');
+            })
+            ->value('email');
     @endphp
     <style>
         body { font-family: DejaVu Sans, Arial, sans-serif; margin: 0; padding: 10px; }
-        .wrap { display: table; width: 100%; }
-        .col { display: table-cell; width: 50%; vertical-align: top; padding: 6px; }
+        .wrap { width: 100%; text-align: center; }
+        .col { display: inline-block; vertical-align: top; padding: 6px; }
 
         /* Card shell */
         .idc { width: 300px; height: 480px; border-radius: 10px; overflow: hidden; position: relative; box-shadow: 0 6px 14px rgba(0,0,0,.12); }
@@ -32,6 +38,13 @@
 
         /* Back */
         .back { background:#f5f7fa; color:#0d2231; position: relative; }
+        .idc-back::before,
+        .idc-back::after { content:''; position:absolute; left:0; right:0; height:140px; background:#102A3B; opacity:.85; }
+        .idc-back::before { top:-30px; }
+        .idc-back::after { bottom:-30px; }
+        .back .top,
+        .back .content,
+        .back .footer { position: relative; z-index: 1; }
         .back .top { text-align:center; padding: 16px 12px 4px; }
         .back .logo { width: 44px; height: 44px; }
         .back .org { font-weight:800; font-size: 12px; }
@@ -74,7 +87,7 @@
 
         <!-- BACK -->
         <div class="col">
-            <div class="idc back">
+            <div class="idc back idc-back">
                 <div class="top">
                     @if($logoPath && file_exists($logoPath))
                         <img src="{{ $logoPath }}" class="logo" alt="logo">
@@ -101,8 +114,8 @@
                     </ul>
                 </div>
                 <div class="footer">
-                    {{ config('app.url') }}
-                    @if(config('mail.from.address')) | {{ config('mail.from.address') }} @endif
+                    {{ $memberLoginUrl }}
+                    @if($adminEmail) | {{ $adminEmail }} @endif
                 </div>
             </div>
         </div>

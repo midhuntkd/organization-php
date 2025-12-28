@@ -17,7 +17,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
-            'user_image' => ['nullable', 'image', 'max:2048'],
+            'user_image' => ['nullable', 'image', 'max:2048', 'dimensions:min_width=200,min_height=200,ratio=1/1'],
             'blood_group' => ['nullable', 'string', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
 
             'address_line1' => ['nullable', 'string', 'max:255'],

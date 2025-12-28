@@ -8,6 +8,11 @@
             background: rgba(255, 255, 255, 0.1);
             padding: 20px;
         }
+        .profile-image-hint {
+            color: #f2a3a3;
+            font-size: 12px;
+            font-weight: 500;
+        }
     </style>
     <section class="content">
         <div class="row justify-content-center align-items-center" style="min-height:80vh;">
@@ -66,7 +71,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Profile Image</label>
+                                <label class="form-label">Profile Image <span class="profile-image-hint">(Square image min 200x200px, max 2 MB)</span></label>
                                 <input type="file" name="user_image"
                                     class="form-control @error('user_image') is-invalid @enderror" accept="image/*">
                                 @error('user_image')

@@ -12,10 +12,19 @@
             <div class="multinav-scroll" style="height: 99%;">
                 <!-- sidebar menu-->
                 <ul class="sidebar-menu" data-widget="tree">
-                    <li class="header fs-10 m-0 text-uppercase">Dashboard</li>
-                    @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.members') || auth()->user()->can('access.memberships') || auth()->user()->can('access.upcoming_modules'))
-                    <li>
+                    {{-- <li class="header fs-10 m-0 text-uppercase">Menu</li> --}}
+                    @role('organization-admin') 
+                    {{-- <li>
                         <a href="{{ route('orgadmin.dashboard', $organization->slug) }}">
+                            <i data-feather="home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li> --}}
+                    @endrole
+
+                    @role('member')
+                    <li>
+                        <a href="{{ route('member.dashboard', $organization->slug) }}">
                             <i data-feather="home"></i>
                             <span>Dashboard</span>
                             <!-- <span class="pull-right-container">
@@ -23,6 +32,9 @@
                             </span> -->
                         </a>
                     </li>
+                    @endrole
+                    @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.members') || auth()->user()->can('access.memberships') || auth()->user()->can('access.upcoming_modules'))
+                    
                     @if(auth()->user()->hasRole('organization-admin') || auth()->user()->can('access.members'))
                         <li class="treeview">
                             <a href="#">
@@ -115,15 +127,6 @@
 
                     @endif
                     @role('member')
-                    <li>
-                        <a href="{{ route('member.dashboard', $organization->slug) }}">
-                            <i data-feather="home"></i>
-                            <span>Dashboard</span>
-                            <!-- <span class="pull-right-container">
-                                <i class="fa fa-angle-right pull-right"></i>
-                            </span> -->
-                        </a>
-                    </li>
                     <li>
                         <a href="{{ route('member.profile.edit', $organization->slug) }}">
                             <i data-feather="user"></i>

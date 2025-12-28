@@ -13,6 +13,12 @@
 
 @php
 $headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('hyper/images/l-logo-ico.png');
+$memberLoginUrl = route('member_login', ['organization' => $organization->slug]);
+$adminEmail = $organization->users()
+    ->whereHas('roles', function ($q) {
+        $q->where('name', 'organization-admin');
+    })
+    ->value('email');
 @endphp
 
 @section('content')
@@ -23,6 +29,9 @@ $headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Member ID Card</h5>
                     <div class="d-flex gap-2">
+                        <a href="{{ route('member.dashboard', $organization->slug) }}" class="btn btn-outline-secondary">
+                            <i class="mdi mdi-arrow-left me-1"></i> Go Back
+                        </a>
                         <button type="button" id="btnPrintIdCard" class="btn btn-secondary">
                             <i class="mdi mdi-printer me-1"></i> Print
                         </button>
@@ -87,15 +96,14 @@ $headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('
                                 </ul>
                             </div>
                             <div class="idc-back-footer">
-                                @php($siteUrl = "https://member.org.in/")
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="mdi mdi-web"></span>
-                                    <span>{{ $siteUrl }}</span>
+                                    <span>{{ $memberLoginUrl }}</span>
                                 </div>
-                                @if(config('mail.from.address'))
+                                @if($adminEmail)
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="mdi mdi-email-outline"></span>
-                                    <span>{{ config('mail.from.address') }}</span>
+                                    <span>{{ $adminEmail }}</span>
                                 </div>
                                 @endif
                             </div>
@@ -128,7 +136,7 @@ $headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('
     /* Back */
     .idc-back { background: #f5f7fa; color:#0d2231; display:grid; grid-template-rows: auto 1fr auto; }
     .idc-back::before { content:''; position:absolute; top:-30px; left:0px; width:100%; height:160px; background: linear-gradient(135deg,#102A3B,#0C1F2F); border-bottom-right-radius:0px; opacity:.85; }
-    .idc-back::after { content:''; position:absolute; bottom:-30px; right:0px; width:100%; height:160px; background: linear-gradient(135deg,#0C1F2F,#21c1d6); border-top-left-radius:0px; opacity:.9; }
+    .idc-back::after { content:''; position:absolute; bottom:-30px; right:0px; width:100%; height:160px; background: linear-gradient(135deg,#102A3B,#0C1F2F); border-top-left-radius:0px; opacity:.9; }
     .idc-back-top { padding: 22px 18px 6px; position: relative; z-index:1; text-align: center; }
     .idc-logo-small { max-width: 80%; max-height: 30px; object-fit: contain; }
     .idc-logo-small-2 { max-width: 80%; max-height: 60px; object-fit: contain; }
@@ -138,7 +146,7 @@ $headerLogoUrl = isset($organization) ? $organization->header_logo_url : asset('
     .idc-back-table .lbl { white-space:nowrap; }
     .idc-back-table .val { line-height:1.3; }
     .idc-notes { margin:12px 0 0; padding-left: 18px; font-size: 11px; }
-    .idc-back-footer { padding: 10px 18px 16px; font-size: 11px; z-index:1; color:#2e5163; }
+    .idc-back-footer { padding: 10px 18px 16px; font-size: 11px; z-index:1; color:#7fb6d4; }
     .idc-img-box{ display: flex; align-items: center; justify-content: center; width: 100%; height: auto;  }
 
     /* Print only the ID cards */

@@ -40,16 +40,16 @@
                     <span class="badge {{ $statusClass }}">{{ ucfirst($payment->status) }}</span>
                 </div>
                 <div class="box-body">
-                    <div class="row g-3 mb-3">
+                    <div class="row g-3 mb-3 detail-row">
                         <div class="col-md-4">
-                            <div class="detail-card p-3 h-100">
+                            <div class="detail-card p-3">
                                 <div class="detail-label">Member</div>
                                 <div class="detail-value mb-1">{{ $payment->user?->name ?? '-' }}</div>
                                 <div class="detail-sub">{{ $payment->user?->email ?? '-' }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="detail-card p-3 h-100">
+                            <div class="detail-card p-3">
                                 <div class="detail-label">Payment</div>
                                 <div class="detail-value">Method: {{ str_replace('_',' ', $payment->payment_method ?? '-') }}</div>
                                 <div class="detail-sub">Amount: {{ number_format($payment->amount, 2) }}</div>
@@ -57,7 +57,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="detail-card p-3 h-100">
+                            <div class="detail-card p-3">
                                 <div class="detail-label">Membership</div>
                                 <div class="detail-value mb-2">{{ $payment->membership?->name ?? '-' }}</div>
                                 <div class="detail-label mb-1">Proof</div>
@@ -200,6 +200,13 @@
     .reject-trigger {
         min-height: 44px;
         min-width: 170px;
+    }
+    .detail-row > [class^="col-"], .detail-row > [class*=" col-"] {
+        display: flex;
+    }
+    .detail-row .detail-card {
+        flex: 1;
+        height: auto;
     }
 </style>
 @endpush
