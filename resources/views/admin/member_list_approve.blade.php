@@ -21,10 +21,31 @@
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
+                    <form method="GET" class="mb-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" name="name" class="form-control" value="{{ request('name') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Email</label>
+                                <input type="text" name="email" class="form-control" value="{{ request('email') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Phone</label>
+                                <input type="text" name="phone" class="form-control" value="{{ request('phone') }}">
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{{ url()->current() }}" class="btn btn-outline-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
                     <div class="table-responsive">
                         <table class="table text-fade table-bordered table-hover display nowrap margin-top-10 w-p100">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>Sl No</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
@@ -38,6 +59,7 @@
                             <tbody>
                                 @foreach($members as $member)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td class="text-dark">{{ $member->name }}</td>
                                     <td>{{ $member->email }}</td>
                                     <td>{{ $member->phone }}</td>
@@ -46,7 +68,10 @@
                                     <td>{{ $member->verification_id_number }}</td>
                                     <td>{{ $member->membership_code }}</td>
                                     <td>
-                                        <a href="{{ route('orgadmin.member.view', ['organization' => $organization->slug, 'user' => $member->id]) }}" class="btn btn-primary btn-sm">view</a>
+                                        <a href="{{ route('orgadmin.member.view', ['organization' => $organization->slug, 'user' => $member->id]) }}"
+                                            class="text-primary" title="View">
+                                            <span class="mdi mdi-eye"></span>
+                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach

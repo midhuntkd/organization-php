@@ -22,6 +22,8 @@ class StoreMembershipRequest extends FormRequest
             'prefix' => ['nullable', 'string', 'max:10'],
             'joining_fee' => ['nullable', 'numeric', 'min:0'],
             'monthly_fee' => ['nullable', 'numeric', 'min:0'],
+            'payment_day_of_month' => ['required', 'integer', 'min:1', 'max:31'],
+            'payment_frequency' => ['required', 'in:monthly,quarterly,biannually,annually'],
             'status' => ['required', 'in:active,inactive'],
             'is_default' => ['nullable', 'boolean'],
 

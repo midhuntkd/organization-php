@@ -14,12 +14,12 @@
                 <ul class="sidebar-menu" data-widget="tree">
                     {{-- <li class="header fs-10 m-0 text-uppercase">Menu</li> --}}
                     @role('organization-admin') 
-                    {{-- <li>
+                    <li class="{{ request()->routeIs('orgadmin.dashboard') ? 'active' : '' }}">
                         <a href="{{ route('orgadmin.dashboard', $organization->slug) }}">
                             <i data-feather="home"></i>
                             <span>Dashboard</span>
                         </a>
-                    </li> --}}
+                    </li>
                     @endrole
 
                     @role('member')

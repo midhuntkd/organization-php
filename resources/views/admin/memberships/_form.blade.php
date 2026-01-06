@@ -4,6 +4,8 @@
     $prefix = old('prefix', $membership->prefix ?? ($organization->prefix ?? ''));
     $joiningFee = old('joining_fee', $membership->joining_fee ?? 0);
     $monthlyFee = old('monthly_fee', $membership->monthly_fee ?? 0);
+    $paymentDayOfMonth = old('payment_day_of_month', $membership->payment_day_of_month ?? 1);
+    $paymentFrequency = old('payment_frequency', $membership->payment_frequency ?? 'monthly');
     $status = old('status', $membership->status ?? 'active');
     $is_default = old('is_default', $membership->is_default ?? false);
 @endphp
@@ -64,10 +66,33 @@
     </div>
 
     <div class="col-md-6 mb-3">
-        <label class="form-label" for="monthly_fee">Monthly Fee</label>
+        <label class="form-label" for="monthly_fee">Membership Fee</label>
         <input id="monthly_fee" type="number" step="0.01" min="0" name="monthly_fee"
             class="form-control @error('monthly_fee') is-invalid @enderror" value="{{ $monthlyFee }}">
         @error('monthly_fee')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="payment_day_of_month">Payment Day (1-31) <span class="text-danger">*</span></label>
+        <input id="payment_day_of_month" type="number" min="1" max="31" name="payment_day_of_month"
+            class="form-control @error('payment_day_of_month') is-invalid @enderror" value="{{ $paymentDayOfMonth }}" required>
+        @error('payment_day_of_month')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="payment_frequency">Payment Frequency <span class="text-danger">*</span></label>
+        <select id="payment_frequency" name="payment_frequency"
+            class="form-select @error('payment_frequency') is-invalid @enderror" required>
+            <option value="monthly" @selected($paymentFrequency === 'monthly')>Monthly</option>
+            <option value="quarterly" @selected($paymentFrequency === 'quarterly')>Quarterly</option>
+            <option value="biannually" @selected($paymentFrequency === 'biannually')>Biannually</option>
+            <option value="annually" @selected($paymentFrequency === 'annually')>Annually</option>
+        </select>
+        @error('payment_frequency')
             <div class="invalid-feedback d-block">{{ $message }}</div>
         @enderror
     </div>

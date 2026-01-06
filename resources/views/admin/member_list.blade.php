@@ -25,6 +25,7 @@
                         <table class="table text-fade table-bordered table-hover display nowrap margin-top-10 w-p100">
                             <thead>
                                 <tr class="text-dark">
+                                    <th>Sl No</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
@@ -38,6 +39,7 @@
                             <tbody>
                                 @foreach($members as $member)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td class="text-dark">{{ $member->name }}</td>
                                     <td>{{ $member->email }}</td>
                                     <td>{{ $member->phone }}</td>

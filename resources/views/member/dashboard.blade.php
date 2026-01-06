@@ -258,8 +258,10 @@
 
 
                     <div class="d-flex justify-content-between align-items-center pb-2 mb-2 ">
-                        <span class="text-dark fw-medium">Pending Balance</span>
-                        <span class="fw-medium text-primary">{{ number_format($wallet['pending_balance'], 2) }}</span>
+                        <span class="text-dark fw-medium">Balance</span>
+                        <span class="fw-medium {{ $wallet['pending_balance'] < 0 ? 'text-danger' : ($wallet['pending_balance'] > 0 ? 'text-success' : 'text-muted') }}">
+                            {{ number_format($wallet['pending_balance'], 2) }}
+                        </span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center pb-2 mb-2 ">
                         <span class="text-dark fw-medium">Payments Awaiting Approval</span>
@@ -415,8 +417,9 @@
                                 <div class="box-body">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="text-dark fw-semibold">Pending Balance</span>
-                                        <span
-                                            class="fw-bold text-primary">{{ number_format($wallet['pending_balance'], 2) }}</span>
+                                        <span class="fw-bold {{ $wallet['pending_balance'] < 0 ? 'text-danger' : ($wallet['pending_balance'] > 0 ? 'text-success' : 'text-muted') }}">
+                                            {{ number_format($wallet['pending_balance'], 2) }}
+                                        </span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="text-dark fw-semibold">Payments Awaiting Approval</span>

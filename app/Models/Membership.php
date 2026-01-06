@@ -13,6 +13,8 @@ class Membership extends Model
         'unique_id',
         'joining_fee',
         'monthly_fee',
+        'payment_day_of_month',
+        'payment_frequency',
         'status',
         'is_default'
     ];
@@ -21,6 +23,8 @@ class Membership extends Model
         'organization_id' => 'integer',
         'joining_fee' => 'float',
         'monthly_fee' => 'float',
+        'payment_day_of_month' => 'integer',
+        'payment_frequency' => 'string',
         'is_default' => 'boolean',
     ];
 
@@ -37,6 +41,11 @@ class Membership extends Model
     public function benefits()
     {
         return $this->belongsToMany(MembershipBenefit::class, 'membership_benefit_membership');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
     }
 
     public function scopeActive($q)

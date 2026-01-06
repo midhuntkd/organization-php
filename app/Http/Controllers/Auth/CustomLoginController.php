@@ -110,7 +110,7 @@ class CustomLoginController extends Controller
 
         // If organization admin
         if ($user->hasRole('organization-admin')) {
-            return redirect()->route('orgadmin.members', $organization->slug);
+            return redirect()->route('orgadmin.dashboard', $organization->slug);
         }
 
         // If member, check if the organization matches

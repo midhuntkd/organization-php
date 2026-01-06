@@ -7,8 +7,10 @@ use App\Mail\MemberApprovedMail;
 use App\Mail\MemberRejectedMail;
 use App\Models\MemberRejection;
 use App\Models\Membership;
+use App\Models\MembershipPaymentLedger;
 use App\Models\Organization;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -20,10 +22,124 @@ use Spatie\Permission\Models\Permission;
 
 class MemberController extends Controller
 {
-    public function showMemberList(Organization $organization)
+    public function dashboard(Organization $organization, Request $request)
+    {
+        $orgId = $organization->id;
+
+        $membershipCount = Membership::where('organization_id', $orgId)->count();
+        $membersCount = User::role('member')
+            ->where('organization_id', $orgId)
+            ->where('approved', true)
+            ->count();
+        $pendingMemberApprovals = User::role('member')
+            ->where('organization_id', $orgId)
+            ->where('approved', false)
+            ->where('rejected', false)
+            ->count();
+        $pendingPaymentApprovals = MembershipPaymentLedger::query()
+            ->where('organization_id', $orgId)
+            ->where('entry_type', 'payment')
+            ->where('status', 'pending')
+            ->count();
+
+        $joinedStartInput = $request->input('joined_start');
+        $joinedEndInput = $request->input('joined_end');
+        $joinedStart = $joinedStartInput ? Carbon::parse($joinedStartInput)->startOfDay() : Carbon::now()->startOfMonth();
+        $joinedEnd = $joinedEndInput ? Carbon::parse($joinedEndInput)->endOfDay() : Carbon::now()->endOfMonth();
+
+        $newMembersQuery = User::role('member')
+            ->where('organization_id', $orgId)
+            ->where('approved', true)
+            ->whereBetween('membership_started_at', [$joinedStart, $joinedEnd]);
+
+        $newMembersCount = $newMembersQuery->count();
+        $newMembers = $newMembersQuery
+            ->with('membership')
+            ->orderByDesc('membership_started_at')
+            ->limit(10)
+            ->get();
+
+        $memberships = Membership::query()
+            ->where('organization_id', $orgId)
+            ->withCount(['users' => fn($q) => $q->where('approved', true)])
+            ->orderBy('name')
+            ->get();
+
+        $lastMonthStart = Carbon::now()->subMonthNoOverflow()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->subMonthNoOverflow()->endOfMonth();
+        $lastMonthTransactions = MembershipPaymentLedger::query()
+            ->with(['user', 'membership'])
+            ->where('organization_id', $orgId)
+            ->where(function ($q) use ($lastMonthStart, $lastMonthEnd) {
+                $q->whereBetween('payment_date', [$lastMonthStart, $lastMonthEnd])
+                    ->orWhere(function ($q2) use ($lastMonthStart, $lastMonthEnd) {
+                        $q2->whereNull('payment_date')
+                            ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd]);
+                    });
+            })
+            ->orderByDesc('payment_date')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get();
+
+        $balanceStartInput = $request->input('balance_start');
+        $balanceEndInput = $request->input('balance_end');
+        $balanceStart = $balanceStartInput ? Carbon::parse($balanceStartInput)->startOfDay() : null;
+        $balanceEnd = $balanceEndInput ? Carbon::parse($balanceEndInput)->endOfDay() : null;
+
+        $applyBalanceDate = function ($query) use ($balanceStart, $balanceEnd) {
+            if (! $balanceStart || ! $balanceEnd) {
+                return $query;
+            }
+            return $query->where(function ($q) use ($balanceStart, $balanceEnd) {
+                $q->whereBetween('payment_date', [$balanceStart, $balanceEnd])
+                    ->orWhere(function ($q2) use ($balanceStart, $balanceEnd) {
+                        $q2->whereNull('payment_date')
+                            ->whereBetween('created_at', [$balanceStart, $balanceEnd]);
+                    });
+            });
+        };
+
+        $chargesQuery = MembershipPaymentLedger::query()
+            ->where('organization_id', $orgId)
+            ->where('entry_type', 'charge')
+            ->where('status', 'approved');
+        $paymentsQuery = MembershipPaymentLedger::query()
+            ->where('organization_id', $orgId)
+            ->where('entry_type', 'payment')
+            ->where('status', 'approved');
+
+        $charges = $applyBalanceDate($chargesQuery)->sum('amount');
+        $payments = $applyBalanceDate($paymentsQuery)->sum('amount');
+        $totalBalanceToCollect = max(0, $charges - $payments);
+
+        return view('admin.dashboard', [
+            'organization' => $organization,
+            'membershipCount' => $membershipCount,
+            'membersCount' => $membersCount,
+            'pendingMemberApprovals' => $pendingMemberApprovals,
+            'pendingPaymentApprovals' => $pendingPaymentApprovals,
+            'newMembersCount' => $newMembersCount,
+            'joinedStart' => $joinedStart,
+            'joinedEnd' => $joinedEnd,
+            'newMembers' => $newMembers,
+            'memberships' => $memberships,
+            'lastMonthTransactions' => $lastMonthTransactions,
+            'lastMonthStart' => $lastMonthStart,
+            'lastMonthEnd' => $lastMonthEnd,
+            'balanceStart' => $balanceStartInput,
+            'balanceEnd' => $balanceEndInput,
+            'totalBalanceToCollect' => $totalBalanceToCollect,
+        ]);
+    }
+
+    public function showMemberList(Organization $organization, Request $request)
     {
         $members = User::role('member')
             ->where(['organization_id' => $organization->id, 'approved' => 1])
+            ->when($request->filled('name'), fn($q) => $q->where('name', 'like', '%' . $request->input('name') . '%'))
+            ->when($request->filled('email'), fn($q) => $q->where('email', 'like', '%' . $request->input('email') . '%'))
+            ->when($request->filled('phone'), fn($q) => $q->where('phone', 'like', '%' . $request->input('phone') . '%'))
             ->with('organization')
             ->get();
 

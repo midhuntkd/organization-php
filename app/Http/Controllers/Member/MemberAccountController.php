@@ -415,9 +415,24 @@ class MemberAccountController extends Controller
             return;
         }
 
-        $startDate = $user->membership_started_at ?? $user->created_at ?? now();
+        $startDate = $user->membership_started_at ?? $user->created_at;
+        if (! $startDate) {
+            return;
+        }
 
-        $lastMonthlyCharge = MembershipPaymentLedger::query()
+        $startDate = $startDate instanceof Carbon ? $startDate : Carbon::parse($startDate);
+        $today = Carbon::today();
+        $paymentDay = (int) ($membership->payment_day_of_month ?? 1);
+        $paymentDay = max(1, min(31, $paymentDay));
+        $frequency = $membership->payment_frequency ?? 'monthly';
+        $intervalMonths = match ($frequency) {
+            'quarterly' => 3,
+            'biannually' => 6,
+            'annually' => 12,
+            default => 1,
+        };
+
+        $lastCharge = MembershipPaymentLedger::query()
             ->where('user_id', $user->id)
             ->where('organization_id', $organization->id)
             ->where('entry_type', 'charge')
@@ -426,28 +441,48 @@ class MemberAccountController extends Controller
             ->latest()
             ->first();
 
-        $lastChargeDate = $lastMonthlyCharge?->payment_date ?? $startDate;
-        if (! $lastChargeDate instanceof Carbon) {
-            $lastChargeDate = Carbon::parse($lastChargeDate);
-        }
+        $cursor = $lastCharge?->payment_date ? Carbon::parse($lastCharge->payment_date) : $startDate;
+        $cursor = $cursor->startOfMonth();
 
-        $today = Carbon::today();
-        while ($lastChargeDate->copy()->addDays(30)->lte($today)) {
-            $lastChargeDate = $lastChargeDate->copy()->addDays(30);
+        $endCursor = $today->copy()->startOfMonth();
+        while ($cursor->lte($endCursor)) {
+            $chargeDate = $cursor->copy()->day(min($paymentDay, $cursor->daysInMonth));
 
-            MembershipPaymentLedger::create([
-                'organization_id' => $organization->id,
-                'user_id' => $user->id,
-                'membership_id' => $membership->id,
-                'entry_type' => 'charge',
-                'reason' => 'monthlyfee',
-                'amount' => $membership->monthly_fee,
-                'description' => 'Monthly fee',
-                'status' => 'approved',
-                'approved_at' => now(),
-                'approved_by' => Auth::id(),
-                'payment_date' => $lastChargeDate,
-            ]);
+            if ($chargeDate->gt($today)) {
+                break;
+            }
+
+            if ($startDate->gt($chargeDate)) {
+                $cursor->addMonth();
+                continue;
+            }
+
+            $chargeExists = MembershipPaymentLedger::query()
+                ->where('user_id', $user->id)
+                ->where('organization_id', $organization->id)
+                ->where('entry_type', 'charge')
+                ->where('reason', 'monthlyfee')
+                ->whereYear('payment_date', $chargeDate->year)
+                ->whereMonth('payment_date', $chargeDate->month)
+                ->exists();
+
+            if (! $chargeExists) {
+                MembershipPaymentLedger::create([
+                    'organization_id' => $organization->id,
+                    'user_id' => $user->id,
+                    'membership_id' => $membership->id,
+                    'entry_type' => 'charge',
+                    'reason' => 'monthlyfee',
+                    'amount' => $membership->monthly_fee,
+                    'description' => 'Monthly fee',
+                    'status' => 'approved',
+                    'approved_at' => now(),
+                    'approved_by' => Auth::id(),
+                    'payment_date' => $chargeDate,
+                ]);
+            }
+
+            $cursor->addMonths($intervalMonths);
         }
     }
 
@@ -487,7 +522,7 @@ class MemberAccountController extends Controller
             ->get();
 
         return [
-            'pending_balance' => max(0, $charges - $paymentsApproved),
+            'pending_balance' => $paymentsApproved-$charges,
             'pending_payments' => $pendingPayments,
             'history' => $history,
         ];

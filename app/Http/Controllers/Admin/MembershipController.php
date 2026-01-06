@@ -9,6 +9,7 @@ use App\Models\MembershipBenefit;
 use App\Models\MembershipCategory;
 use App\Models\MembershipRule;
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class MembershipController extends Controller
@@ -70,6 +71,7 @@ class MembershipController extends Controller
     {
         //abort_unless($membership->organization_id === $organization->id, 403);
         $data = $request->validated();
+        $oldPrefix = trim((string) $membership->prefix) ?: 'CAT';
 
         // Re-validate category belongs to org & active
         // $category = MembershipCategory::where('organization_id', $organization->id)
@@ -80,6 +82,35 @@ class MembershipController extends Controller
         }
 
         $membership->update($data);
+
+        $newPrefix = trim((string) $membership->prefix) ?: 'CAT';
+        if ($oldPrefix !== $newPrefix) {
+            $orgPrefix = trim((string) $organization->org_prefix) ?: 'ORG';
+            $pattern = '/^' . preg_quote($orgPrefix, '/') . '-' . preg_quote($oldPrefix, '/') . '(\d+)$/';
+
+            User::query()
+                ->where('organization_id', $organization->id)
+                ->where('membership_id', $membership->id)
+                ->whereNotNull('membership_code')
+                ->orderBy('id')
+                ->chunkById(200, function ($users) use ($orgPrefix, $newPrefix, $pattern, $organization, $membership) {
+                    foreach ($users as $user) {
+                        $code = (string) $user->membership_code;
+                        if (preg_match($pattern, $code, $m)) {
+                            $candidate = $orgPrefix . '-' . $newPrefix . $m[1];
+                            $exists = User::query()
+                                ->where('organization_id', $organization->id)
+                                ->where('membership_code', $candidate)
+                                ->where('id', '<>', $user->id)
+                                ->exists();
+                            $user->membership_code = $exists
+                                ? User::nextMembershipCode($organization, $membership)
+                                : $candidate;
+                            $user->save();
+                        }
+                    }
+                });
+        }
 
         $membership->rules()->sync($request->rule_ids ?? []);
         $membership->benefits()->sync($request->benefit_ids ?? []);

@@ -78,7 +78,7 @@ Route::middleware(['auth', 'role:organization-admin|member'])
         Route::middleware(['org.context'])    // custom, see below
             ->group(function () {
 
-                Route::get('/dashboard', [MemberController::class, 'showMemberList'])
+                Route::get('/dashboard', [MemberController::class, 'dashboard'])
                     ->middleware('org.permission:access.members|access.memberships')
                     ->name('dashboard');
 
