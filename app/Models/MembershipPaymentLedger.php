@@ -55,4 +55,9 @@ class MembershipPaymentLedger extends Model
     {
         return $this->belongsTo(Membership::class);
     }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 }

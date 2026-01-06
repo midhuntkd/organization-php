@@ -106,6 +106,14 @@
                                 Membership Code:
                                 <span id="current-membership-code">{{ $user->membership_code ?? '-' }}</span>
                             </p>
+                            <p class="mb-0 text-muted">
+                                Joining Date:
+                                <span id="current-membership-joined">{{ $user->membership_started_at?->format('d M Y') ?? '-' }}</span>
+                            </p>
+                            <p class="mb-0 text-muted">
+                                Pending Amount:
+                                <span id="current-membership-pending">{{ number_format($wallet['pending_balance'] ?? 0, 2) }}</span>
+                            </p>
                         @else
                             <p class="mb-0">You do not have a membership assigned yet.</p>
                         @endif
@@ -143,16 +151,32 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <h5 class="mb-2">Rules</h5>
-                                <ul class="list-unstyled mb-3" id="selected-rules"></ul>
-                            </div>
-                            <div class="mt-3">
-                                <h5 class="mb-2">Benefits</h5>
-                                <ul class="list-unstyled mb-0" id="selected-benefits"></ul>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Rules</th>
+                                                <th>Benefits</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><ul class="list-unstyled mb-0" id="selected-rules"></ul></td>
+                                                <td><ul class="list-unstyled mb-0" id="selected-benefits"></ul></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="box-footer text-end">
+                    <div class="box-footer d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="upgrade-agree" required>
+                            <label class="form-check-label" for="upgrade-agree">
+                                I have read the rules and benefits and confirm I am eligible for upgrade.
+                            </label>
+                        </div>
                         <button class="btn btn-primary"
                             id="apply-membership-btn"
                             {{ $memberships->isEmpty() || $pendingRequest ? 'disabled' : '' }}>
@@ -182,6 +206,7 @@
             const currentLabel = document.getElementById('current-membership-label');
             const currentNameEl = document.getElementById('current-membership-name');
             const currentCodeEl = document.getElementById('current-membership-code');
+            const agreeCheckbox = document.getElementById('upgrade-agree');
             const initialDetails = @json($initialMembershipData);
             const hasPendingRequest = @json((bool) $pendingRequest);
             let selectedMembershipId = @json($initialMembershipId);
@@ -201,6 +226,10 @@
                     }
                     if (hasPendingRequest) {
                         showAlert('You already have an upgrade request that is pending review.', 'warning');
+                        return;
+                    }
+                    if (agreeCheckbox && !agreeCheckbox.checked) {
+                        showAlert('Please confirm you have reviewed the rules and benefits.', 'warning');
                         return;
                     }
                     if (!window.confirm('Are you sure you want to request this membership upgrade?')) {
@@ -236,6 +265,12 @@
                                 applyButton.disabled = true;
                             }
                         });
+                });
+            }
+
+            if (agreeCheckbox) {
+                agreeCheckbox.addEventListener('change', () => {
+                    updateApplyState();
                 });
             }
 
@@ -280,9 +315,7 @@
                 document.getElementById('selected-monthly-fee').textContent = formatCurrency(data.monthly_fee);
                 renderList('selected-rules', data.rules, 'No rules defined for this membership yet.');
                 renderList('selected-benefits', data.benefits, 'No benefits defined for this membership yet.');
-                if (applyButton) {
-                    applyButton.disabled = false;
-                }
+                updateApplyState();
             }
 
             function renderList(targetId, items, emptyText) {
@@ -416,6 +449,25 @@
                 } else {
                     applyButton.innerHTML = applyButtonDefault;
                 }
+            }
+
+            function updateApplyState() {
+                if (!applyButton) {
+                    return;
+                }
+                if (hasPendingRequest) {
+                    applyButton.disabled = true;
+                    return;
+                }
+                if (!selectedMembershipId) {
+                    applyButton.disabled = true;
+                    return;
+                }
+                if (agreeCheckbox && !agreeCheckbox.checked) {
+                    applyButton.disabled = true;
+                    return;
+                }
+                applyButton.disabled = false;
             }
 
             function showAlert(message, type) {

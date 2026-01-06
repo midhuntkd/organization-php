@@ -111,6 +111,9 @@ class MemberAccountController extends Controller
         $wallet = $this->buildWalletData($user, $organization);
 
         $pendingUpgradeRequest = $this->getPendingUpgradeRequest($user);
+
+        //echo"<pre>";print_r($pendingUpgradeRequest);exit;
+
         $rejectedUpgradeRequest = null;
         if (! $pendingUpgradeRequest) {
             $rejectedUpgradeRequest = $this->getLatestRejectedUpgradeRequest($user);
@@ -152,7 +155,7 @@ class MemberAccountController extends Controller
         ];
 
         $query = MembershipPaymentLedger::query()
-            ->with(['user', 'membership'])
+            ->with(['user', 'membership', 'approvedBy'])
             ->where('organization_id', $organization->id);
 
         if ($filters['start_date']) {
@@ -249,6 +252,7 @@ class MemberAccountController extends Controller
         $initialMembershipData = $initialSelection
             ? $this->formatMembershipPayload($initialSelection)
             : null;
+        $wallet = $this->buildWalletData($user, $organization);
 
         return view('member.membership_upgrade', [
             'organization' => $organization,
@@ -258,6 +262,7 @@ class MemberAccountController extends Controller
             'currentMembershipData' => $currentMembershipData,
             'initialMembershipData' => $initialMembershipData,
             'pendingRequest' => $pendingRequest,
+            'wallet' => $wallet,
         ]);
     }
 
@@ -306,6 +311,11 @@ class MemberAccountController extends Controller
             ], 422);
         }
 
+        MembershipPlanUpgradeRequest::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'rejected')
+            ->update(['hide_status' => true]);
+
         MembershipPlanUpgradeRequest::create([
             'user_id' => $user->id,
             'current_membership_id' => $user->membership_id,
@@ -347,23 +357,56 @@ class MemberAccountController extends Controller
      */
     protected function getPendingUpgradeRequest(UserModel $user): ?MembershipPlanUpgradeRequest
     {
-        return MembershipPlanUpgradeRequest::query()
-            ->with('membership')
+        $pendingRequest = MembershipPlanUpgradeRequest::query()
             ->where('user_id', $user->id)
             ->whereIn('status', ['requested', 'hold'])
             ->latest()
             ->first();
+
+        if ($pendingRequest) {
+            $pendingRequest->setAppends([]);
+        }
+
+        return $pendingRequest;
     }
 
     protected function getLatestRejectedUpgradeRequest(UserModel $user): ?MembershipPlanUpgradeRequest
     {
-        return MembershipPlanUpgradeRequest::query()
-            ->with('membership')
+        $rejectRequest = MembershipPlanUpgradeRequest::query()
             ->where('user_id', $user->id)
             ->where('status', 'rejected')
+            ->where('hide_status', false)
             ->latest('rejected_at')
             ->latest() // fallback
             ->first();
+
+        if ($rejectRequest) {
+            $rejectRequest->setAppends([]);
+        }
+
+        return $rejectRequest;    
+    }
+
+    public function hideUpgradeRejection(Request $request, Organization $organization, MembershipPlanUpgradeRequest $upgradeRequest)
+    {
+        $user = Auth::user();
+
+        if (! $user || $upgradeRequest->user_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($user->organization_id !== $organization->id) {
+            abort(404);
+        }
+
+        if ($upgradeRequest->status !== 'rejected') {
+            return back()->with('error', 'Only rejected requests can be hidden.');
+        }
+
+        $upgradeRequest->hide_status = true;
+        $upgradeRequest->save();
+
+        return back()->with('status', 'The rejected request has been hidden.');
     }
 
     protected function ensureChargesUpToDate(UserModel $user, ?Membership $membership, Organization $organization): void

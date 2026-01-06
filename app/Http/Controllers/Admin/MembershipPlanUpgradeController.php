@@ -35,7 +35,26 @@ class MembershipPlanUpgradeController extends Controller
 
         abort_if($upgradeRequest->user?->organization_id !== $organization->id, 404);
 
-        return view('admin.memberships.upgrades.show', compact('organization', 'upgradeRequest'));
+        $user = $upgradeRequest->user;
+        $organizationId = $organization->id;
+
+        $charges = MembershipPaymentLedger::query()
+            ->where('user_id', $user?->id)
+            ->where('organization_id', $organizationId)
+            ->where('entry_type', 'charge')
+            ->where('status', 'approved')
+            ->sum('amount');
+
+        $paymentsApproved = MembershipPaymentLedger::query()
+            ->where('user_id', $user?->id)
+            ->where('organization_id', $organizationId)
+            ->where('entry_type', 'payment')
+            ->where('status', 'approved')
+            ->sum('amount');
+
+        $pendingBalance = max(0, $charges - $paymentsApproved);
+
+        return view('admin.memberships.upgrades.show', compact('organization', 'upgradeRequest', 'pendingBalance'));
     }
 
     public function approve(Request $request, Organization $organization, MembershipPlanUpgradeRequest $upgradeRequest)

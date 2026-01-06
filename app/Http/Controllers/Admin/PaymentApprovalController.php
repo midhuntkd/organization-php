@@ -27,7 +27,7 @@ class PaymentApprovalController extends Controller
     {
         $this->ensureBelongsToOrganization($ledger, $organization);
 
-        $ledger->load(['user', 'membership']);
+        $ledger->load(['user', 'membership', 'approvedBy']);
 
         return view('admin.payments.show', [
             'payment' => $ledger,
@@ -76,6 +76,26 @@ class PaymentApprovalController extends Controller
         ]);
 
         return back()->with('status', 'Payment rejected.');
+    }
+
+    public function cancel(Organization $organization, MembershipPaymentLedger $ledger)
+    {
+        $this->ensureBelongsToOrganization($ledger, $organization);
+
+        if ($ledger->status !== 'pending') {
+            return back()->with('error', 'This payment has already been processed.');
+        }
+
+        $ledger->update([
+            'status' => 'cancelled',
+            'approved_by' => null,
+            'approved_at' => null,
+            'rejected_by' => null,
+            'rejected_at' => null,
+            'rejected_reason' => null,
+        ]);
+
+        return back()->with('status', 'Payment cancelled.');
     }
 
     protected function ensureBelongsToOrganization(MembershipPaymentLedger $ledger, Organization $organization): void

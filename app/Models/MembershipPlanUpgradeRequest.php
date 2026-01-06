@@ -15,6 +15,7 @@ class MembershipPlanUpgradeRequest extends Model
         'membership_id',
         'status',
         'reject_reason',
+        'hide_status',
         'approved_by',
         'rejected_by',
         'rejected_at',
@@ -27,6 +28,13 @@ class MembershipPlanUpgradeRequest extends Model
         'membership_id' => 'integer',
         'approved_by' => 'integer',
         'rejected_by' => 'integer',
+        'hide_status' => 'boolean',
+    ];
+
+
+    protected $appends = [
+        'membership_name',
+        'membership_prefix',
     ];
 
     public function user()
@@ -42,5 +50,16 @@ class MembershipPlanUpgradeRequest extends Model
     public function currentMembership()
     {
         return $this->belongsTo(Membership::class, 'current_membership_id');
+    }
+
+
+    public function getMembershipNameAttribute()
+    {
+        return $this->membership?->name;
+    }
+
+    public function getMembershipPrefixAttribute()
+    {
+        return $this->membership?->prefix;
     }
 }

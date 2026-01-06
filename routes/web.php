@@ -135,6 +135,8 @@ Route::middleware(['auth', 'role:organization-admin|member'])
                         ->name('payments.approve');
                     Route::post('/payments/{ledger}/reject', [\App\Http\Controllers\Admin\PaymentApprovalController::class, 'reject'])
                         ->name('payments.reject');
+                    Route::post('/payments/{ledger}/cancel', [\App\Http\Controllers\Admin\PaymentApprovalController::class, 'cancel'])
+                        ->name('payments.cancel');
 
                     Route::get('/transactions', [MemberAccountController::class, 'transactions'])
                         ->name('transactions.index');
@@ -175,6 +177,8 @@ Route::middleware(['auth', 'role:member'])
                                 ->name('membership.details');
                     Route::post('/memberships/change', [MemberAccountController::class, 'changeMembership'])
                         ->name('membership.change');
+                    Route::post('/membership-upgrades/{upgradeRequest}/hide', [MemberAccountController::class, 'hideUpgradeRejection'])
+                        ->name('membership_upgrades.hide');
                         
                 });     
 

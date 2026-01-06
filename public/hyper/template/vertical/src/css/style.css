@@ -33687,6 +33687,14 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
   }
 }
 
+.card-bg-light{
+    background-color:#F4F7FE;
+}
+.dark-skin .card-bg-light{
+    background-color:#1a1a36;
+}
+
+
 /* start: Avatar */
 .avatar-group {
     display: flex;
@@ -33718,3 +33726,15 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
     min-width: 200px;
 }
 /* end: Avatar */
+
+/*added 03-jan-2026 -MR*/
+.prof-card .prof-thumb{
+    width:125px;
+    height:125px;
+}
+.border-dashed{
+    border-style:dashed!important
+}
+.not-allowed{
+    cursor:not-allowed;
+}

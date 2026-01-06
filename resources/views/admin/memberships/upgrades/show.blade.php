@@ -39,6 +39,14 @@
                         </div>
                         <div class="col-md-6">
                             <p class="mb-1"><strong>Current Plan:</strong> {{ $upgradeRequest->currentMembership?->name ?? '-' }}</p>
+                            <p class="mb-1"><strong>Joined On:</strong>
+                                {{ $upgradeRequest->user?->membership_started_at
+                                    ? \Illuminate\Support\Carbon::parse($upgradeRequest->user->membership_started_at)->format('d M Y')
+                                    : '-' }}
+                            </p>
+                            <p class="mb-1"><strong>Pending Amount:</strong>
+                                <span class="badge bg-warning text-dark">{{ number_format($pendingBalance ?? 0, 2) }}</span>
+                            </p>
                             <p class="mb-1"><strong>Requested Plan:</strong> {{ $upgradeRequest->membership?->name ?? '-' }}</p>
                             <p class="mb-1"><strong>Requested On:</strong> {{ $upgradeRequest->created_at?->format('d M Y, h:i A') }}</p>
                         </div>

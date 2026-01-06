@@ -19,6 +19,9 @@ $adminEmail = $organization->users()
         $q->where('name', 'organization-admin');
     })
     ->value('email');
+$validThru = $user->membership_started_at
+    ? \Illuminate\Support\Carbon::parse($user->membership_started_at)->addYear()->format('d-M-Y')
+    : null;
 @endphp
 
 @section('content')
@@ -61,7 +64,7 @@ $adminEmail = $organization->users()
                                 <div class="idc-member-name">{{ strtoupper($user->name) }}</div>
                                 <div class="idc-info-grid">
                                     <div>Membership ID</div><div>: {{ $user->membership_code ?? '-' }}</div>
-                                    <div>Valid Thru</div><div>: {{ $details?->expiry_date?->format('d-M-Y') ?? '-' }}</div>
+                                    <div>Valid Thru</div><div>: {{ $validThru ?? '-' }}</div>
                                     <div>Country of Residence</div><div>: {{ $user->country_of_residence ?: '-' }}</div>
                                 </div>
                             </div>

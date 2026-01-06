@@ -83,7 +83,9 @@
                                         <th>Method</th>
                                         <th>Amount</th>
                                         <th>Status</th>
+                                        <th>Approved By</th>
                                         <th>Description</th>
+                                        <th>Cancel</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -104,10 +106,13 @@
                                                     <span class="badge bg-success">Approved</span>
                                                 @elseif($txn->status === 'pending')
                                                     <span class="badge bg-warning text-dark">Pending</span>
+                                                @elseif($txn->status === 'cancelled')
+                                                    <span class="badge bg-secondary">Cancelled</span>
                                                 @else
                                                     <span class="badge bg-danger">Rejected</span>
                                                 @endif
                                             </td>
+                                            <td>{{ $txn->approvedBy?->name ?? '-' }}</td>
                                             <td>
                                                 @if ($txn->status === 'rejected' && $txn->rejected_reason)
                                                     <div><strong>Rejected:</strong> {!! nl2br(e($txn->rejected_reason)) !!}</div>
@@ -116,18 +121,32 @@
                                                     <div>{!! nl2br(e($txn->description)) !!}</div>
                                                 @endif
                                             </td>
+                                            <td>
+                                                @if ($txn->entry_type === 'payment' && $txn->status !== 'cancelled')
+                                                    <form method="POST"
+                                                        action="{{ route('orgadmin.payments.cancel', [$organization->slug, $txn->id]) }}"
+                                                        onsubmit="return confirm('Cancel this payment?');">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i class="mdi mdi-cancel"></i> Cancel
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">No transactions found.</td>
+                                            <td colspan="9" class="text-center text-muted">No transactions found.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="mt-3">
-                            {{ $transactions->links() }}
+                        <div class="d-flex justify-content-end mt-3">
+                            {{ $transactions->onEachSide(1)->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>
